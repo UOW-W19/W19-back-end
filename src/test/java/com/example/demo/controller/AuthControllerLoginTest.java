@@ -37,6 +37,8 @@ public class AuthControllerLoginTest {
             registerRequest.setPassword("password123");
             registerRequest.setUsername("loginuser");
             registerRequest.setDisplayName("Login User");
+            registerRequest.setNativeLanguage("en");
+            registerRequest.setLearningLanguages(java.util.List.of("es"));
             authService.register(registerRequest);
         } catch (Exception e) {
             // Likely already registered

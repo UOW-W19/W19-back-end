@@ -44,15 +44,25 @@ public class AuthService {
         if (profileRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already taken");
         }
-        if (profileRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username already taken");
+
+        String username = request.getUsername();
+        if (username == null || username.isBlank()) {
+            username = request.getEmail().split("@")[0];
+        }
+
+        if (profileRepository.existsByUsername(username)) {
+            username = username + System.currentTimeMillis() % 1000;
         }
 
         Profile profile = new Profile();
         profile.setEmail(request.getEmail());
-        profile.setUsername(request.getUsername());
+        profile.setUsername(username);
         profile.setDisplayName(request.getDisplayName());
         profile.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        profile.setNativeLanguage(request.getNativeLanguage());
+        profile.setLearningLanguages(request.getLearningLanguages());
+
+        profile.addRole(com.example.demo.enums.AppRole.USER);
 
         Profile savedProfile = profileRepository.save(profile);
 
@@ -78,6 +88,8 @@ public class AuthService {
                 .bio(profile.getBio())
                 .latitude(profile.getLatitude())
                 .longitude(profile.getLongitude())
+                .nativeLanguage(profile.getNativeLanguage())
+                .learningLanguages(profile.getLearningLanguages())
                 .roles(profile.getRoles().stream()
                         .map(role -> role.getRole().name())
                         .collect(Collectors.toList()))
