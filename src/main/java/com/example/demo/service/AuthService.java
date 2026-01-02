@@ -4,6 +4,7 @@ import com.example.demo.dto.AuthResponse;
 import com.example.demo.dto.RegisterRequest;
 import com.example.demo.entity.Profile;
 import com.example.demo.repository.ProfileRepository;
+import com.example.demo.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ public class AuthService {
 
     private final ProfileRepository profileRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtils jwtUtils;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -33,9 +35,11 @@ public class AuthService {
 
         Profile savedProfile = profileRepository.save(profile);
 
+        String jwtToken = jwtUtils.generateToken(savedProfile.getEmail());
+
         return AuthResponse.builder()
                 .userId(savedProfile.getId())
-                .accessToken("TODO_JWT_TOKEN") // We will implement JWT in the next step
+                .accessToken(jwtToken)
                 .build();
     }
 }
