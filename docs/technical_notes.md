@@ -38,3 +38,18 @@ public abstract class BaseEntity {
 ## 3. Database Strategy
 - **ORM**: Spring Data JPA.
 - **DTO Pattern**: We will expose DTOs (Data Transfer Objects) via the API, not Entities directly.
+
+## 4. Security Architecture (JWT)
+The application uses **Spring Security** with a stateless **JWT (JSON Web Token)** based authentication mechanism.
+
+### Key Security Components:
+- **`JwtUtils`**: Handles token generation, parsing, and validation using the HMAC-SHA256 algorithm.
+- **`JwtAuthenticationFilter`**: A custom filter that intercepts every request, extracts the Bearer token, validates it, and sets the security context.
+- **`CustomUserDetailsService`**: Bridge between Spring Security and our database, loading `Profile` records as `UserDetails`.
+- **`SecurityConfig`**: Configures the filter chain, enabling stateless session management and defining public/protected routes.
+
+### Auth Flow:
+1. User provides credentials to `/api/auth/register` (or `login`).
+2. Server validates credentials and returns a JWT.
+3. User includes JWT in the `Authorization: Bearer <token>` header for subsequent requests.
+4. `JwtAuthenticationFilter` validates the token and authenticates the user for that request.
