@@ -15,6 +15,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.List;
+
 @SpringBootTest
 @AutoConfigureMockMvc
 public class AuthControllerTest {
@@ -40,6 +42,8 @@ public class AuthControllerTest {
         request.setPassword("password123");
         request.setUsername("testuser");
         request.setDisplayName("Test User");
+        request.setNativeLanguage("en");
+        request.setLearningLanguages(List.of("vi", "fr"));
 
         mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -50,13 +54,34 @@ public class AuthControllerTest {
     }
 
     @Test
+    void shouldRegisterUserWithoutUsername() throws Exception {
+        RegisterRequest request = new RegisterRequest();
+        request.setEmail("no-username@example.com");
+        request.setPassword("password123");
+        request.setDisplayName("No Username User");
+        request.setNativeLanguage("en");
+        request.setLearningLanguages(List.of("es"));
+
+        mockMvc.perform(post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.userId").exists());
+        
+        // Verify username was generated from email prefix
+        com.example.demo.entity.Profile profile = profileRepository.findByEmail("no-username@example.com").orElseThrow();
+        org.junit.jupiter.api.Assertions.assertEquals("no-username", profile.getUsername());
+    }
+
+    @Test
     void shouldFailRegistrationWithDuplicateEmail() throws Exception {
         // Create existing user
         RegisterRequest request1 = new RegisterRequest();
         request1.setEmail("duplicate@example.com");
         request1.setPassword("password123");
-        request1.setUsername("user1");
         request1.setDisplayName("User 1");
+        request1.setNativeLanguage("en");
+        request1.setLearningLanguages(List.of("vi"));
 
         mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -67,12 +92,11 @@ public class AuthControllerTest {
         RegisterRequest request2 = new RegisterRequest();
         request2.setEmail("duplicate@example.com");
         request2.setPassword("password123");
-        request2.setUsername("user2");
         request2.setDisplayName("User 2");
 
         mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request2)))
-                .andExpect(status().isBadRequest()); // Now handled by GlobalExceptionHandler
+                .andExpect(status().isBadRequest());
     }
 }

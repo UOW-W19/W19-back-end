@@ -15,7 +15,7 @@ import java.util.List;
 @Table(name = "profiles")
 public class Profile extends BaseEntity {
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String username;
 
     @Column(nullable = false, unique = true)
@@ -35,6 +35,13 @@ public class Profile extends BaseEntity {
 
     private Double latitude;
     private Double longitude;
+
+    private String nativeLanguage;
+
+    @ElementCollection
+    @CollectionTable(name = "profile_learning_languages", joinColumns = @JoinColumn(name = "profile_id"))
+    @Column(name = "language_code")
+    private List<String> learningLanguages = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserRole> roles = new ArrayList<>();

@@ -20,5 +20,7 @@ public class ProfileResponse {
     private String bio;
     private Double latitude;
     private Double longitude;
+    private String nativeLanguage;
+    private List<String> learningLanguages;
     private List<String> roles;
 }

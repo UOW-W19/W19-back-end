@@ -38,6 +38,8 @@ public class ProfileControllerTest {
             request.setPassword(password);
             request.setUsername("profileuser");
             request.setDisplayName("Profile User");
+            request.setNativeLanguage("en");
+            request.setLearningLanguages(java.util.List.of("fr"));
             AuthResponse response = authService.register(request);
             token = response.getAccessToken();
         } catch (Exception e) {
