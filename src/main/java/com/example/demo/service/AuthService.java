@@ -76,8 +76,8 @@ public class AuthService {
                 Profile savedProfile = profileRepository.save(profile);
 
                 // Note: RegisterRequest still has old language fields?
-                // I should probably update RegisterRequest or handle it here
-                // For now, let's just save the profile.
+                // Should probably update RegisterRequest or handle it here
+                // For now, just save the profile.
 
                 String jwtToken = jwtUtils.generateToken(savedProfile.getEmail());
                 com.example.demo.entity.RefreshToken refreshToken = refreshTokenService

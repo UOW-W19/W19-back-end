@@ -5,6 +5,9 @@ import com.example.demo.enums.AppRole;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +16,9 @@ import java.util.List;
 @Setter
 @Entity
 @Table(name = "profiles")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Profile extends BaseEntity {
 
     @Column(unique = true)
@@ -37,16 +43,31 @@ public class Profile extends BaseEntity {
     private Double longitude;
 
     @Embedded
+    @Builder.Default
     private Streak streak = new Streak(0, 0);
 
     @OneToMany(mappedBy = "profile", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<UserLanguage> languages = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<UserRole> roles = new ArrayList<>();
 
     @OneToOne(mappedBy = "profile", cascade = CascadeType.ALL, orphanRemoval = true)
     private RefreshToken refreshToken;
+
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Post> posts = new ArrayList<>();
+
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<PostComment> profileComments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "profile", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<PostReaction> profileReactions = new ArrayList<>();
 
     public void addRole(AppRole role) {
         UserRole userRole = new UserRole();

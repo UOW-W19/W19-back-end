@@ -1,73 +1,68 @@
 # Frontend Integration Guide (JWT)
 
-This guide explains how to connect your frontend application to the W19 Backend's JWT-based authentication system.
+This guide explains how to connect your frontend application to the Backend.
 
 ## 1. Authentication Flow
 
-### Registration & Login
-When a user registers or logs in, the backend returns a JSON response containing an `accessToken`.
-
-**Endpoint**: `POST /api/auth/login` or `POST /api/auth/register`
+### Register & Login
+**Endpoints**: `POST /api/auth/register`, `POST /api/auth/login`
 **Response**:
 ```json
 {
-  "userId": 1,
-  "accessToken": "eyJhbGciOiJIUzI1NiJ9..."
+  "userId": "uuid-string",
+  "accessToken": "jwt_token",
+  "refreshToken": "uuid-string",
+  "expiresIn": 3600
 }
 ```
 
-## 2. Token Management
+### Refresh Token
+When the `accessToken` expires, call this to get a new pair.
+**Endpoint**: `POST /api/auth/refresh`
+**Body**: `{ "refreshToken": "stored_uuid" }`
 
-### Storing the Token
-You should store the `accessToken` securely on the client side. Common options:
-- **`localStorage`**: Easy to use, persistent across sessions.
-- **`sessionStorage`**: Only lasts for the current tab session.
-- **`HttpOnly` Cookie**: (Requires backend adjustment to set cookies instead of JSON response).
+---
 
-### Sending the Token
-For every request to a **protected endpoint** (like `/api/profiles/me`), you must include the token in the `Authorization` header.
+## 2. API Authorization
+Include the `accessToken` in the `Authorization` header for all protected requests:
+`Authorization: Bearer <your_token>`
 
-**Header Format**:
-`Authorization: Bearer <your_token_here>`
+---
 
-## 3. JavaScript Example (using Fetch)
+## 3. Core Features
+
+### User Profile
+- **Current User**: `GET /api/users/me` (Legacy `/api/profiles/me` also supported)
+- **Update Profile**: `PATCH /api/users/me`
+
+### Community Feed
+- **Get Feed**: `GET /api/posts?page=0&size=20&language=all`
+  - Optional params: `language`, `latitude`, `longitude` (for distance calc).
+- **Create Post**: `POST /api/posts`
+  - Body: `{ "content": "Hello!", "originalLanguage": "en", "latitude": 4.5, "longitude": -1.2 }`
+
+### Social Interactions
+- **Reactions**: `POST /api/posts/{postId}/reactions` (Body: `{ "reaction": "LIKE" }`)
+- **Comments**: `GET /api/posts/{postId}/comments` or `POST /api/posts/{postId}/comments`
+
+---
+
+## 4. Implementation Snippet (Axios)
 
 ```javascript
-const API_URL = "http://localhost:8080/api";
+import axios from 'axios';
 
-// 1. Login to get token
-async function login(email, password) {
-  const response = await fetch(`${API_URL}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password })
-  });
-  
-  const data = await response.json();
-  if (response.ok) {
-    localStorage.setItem("token", data.accessToken);
-    console.log("Logged in successfully!");
-  }
-}
+const api = axios.create({ baseURL: 'http://localhost:8080/api' });
 
-// 2. Fetch protected data
-async function getMyProfile() {
-  const token = localStorage.getItem("token");
-  
-  const response = await fetch(`${API_URL}/profiles/me`, {
-    headers: {
-      "Authorization": `Bearer ${token}`
-    }
-  });
-  
-  if (response.ok) {
-    const profile = await response.json();
-    console.log("User Profile:", profile);
-  } else if (response.status === 403) {
-    console.error("Session expired or unauthorized");
-  }
-}
+// Add token to requests
+api.interceptors.request.use(config => {
+  const token = localStorage.getItem('token');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+// Example: Create a Post
+export const createPost = async (content) => {
+  return api.post('/posts', { content, originalLanguage: 'en' });
+};
 ```
-
-## 4. Handling Expiration
-The token has a limited lifespan (configured in `application.yml`). If a request returns `403 Forbidden` (or a custom error), the frontend should redirect the user to the login page to obtain a new token.

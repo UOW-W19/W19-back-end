@@ -1,6 +1,7 @@
 package com.example.demo.entity;
 
 import com.example.demo.enums.ProficiencyLevel;
+import com.example.demo.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,11 +12,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserLanguage {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class UserLanguage extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "profile_id", nullable = false)
