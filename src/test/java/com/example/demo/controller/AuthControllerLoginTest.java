@@ -2,6 +2,9 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.RegisterRequest;
+import com.example.demo.dto.LearningLanguageDTO;
+import com.example.demo.enums.ProficiencyLevel;
+import java.util.List;
 import com.example.demo.service.AuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,7 +41,7 @@ public class AuthControllerLoginTest {
             registerRequest.setUsername("loginuser");
             registerRequest.setDisplayName("Login User");
             registerRequest.setNativeLanguage("en");
-            registerRequest.setLearningLanguages(java.util.List.of("es"));
+            registerRequest.setLearningLanguages(List.of(new LearningLanguageDTO("es", ProficiencyLevel.A1)));
             authService.register(registerRequest);
         } catch (Exception e) {
             // Likely already registered

@@ -3,6 +3,9 @@ package com.example.demo.controller;
 import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.AuthResponse;
 import com.example.demo.dto.RegisterRequest;
+import com.example.demo.dto.LearningLanguageDTO;
+import com.example.demo.enums.ProficiencyLevel;
+import java.util.List;
 import com.example.demo.service.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +42,7 @@ public class ProfileControllerTest {
             request.setUsername("profileuser");
             request.setDisplayName("Profile User");
             request.setNativeLanguage("en");
-            request.setLearningLanguages(java.util.List.of("fr"));
+            request.setLearningLanguages(List.of(new LearningLanguageDTO("fr", ProficiencyLevel.B1)));
             AuthResponse response = authService.register(request);
             token = response.getAccessToken();
         } catch (Exception e) {
@@ -67,5 +70,29 @@ public class ProfileControllerTest {
                 .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value("profile@example.com"));
+    }
+
+    @Test
+    void shouldSearchProfilesByLanguage() throws Exception {
+        // Register another user
+        RegisterRequest other = new RegisterRequest();
+        other.setEmail("search@example.com");
+        other.setPassword("password123");
+        other.setDisplayName("Search User");
+        other.setNativeLanguage("jp");
+        other.setLearningLanguages(List.of(new LearningLanguageDTO("en", ProficiencyLevel.A2)));
+        authService.register(other);
+
+        // Search for users learning English
+        mockMvc.perform(get("/api/profiles?learningLang=en")
+                .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.nativeLanguage == 'jp')]").exists());
+
+        // Search for users with native language Japanese
+        mockMvc.perform(get("/api/profiles?nativeLanguage=jp")
+                .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.displayName == 'Search User')]").exists());
     }
 }

@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.dto.AuthResponse;
 import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.ProfileResponse;
+import com.example.demo.dto.LearningLanguageDTO;
 import com.example.demo.dto.RegisterRequest;
 import com.example.demo.entity.Profile;
 import com.example.demo.repository.ProfileRepository;
@@ -60,7 +61,10 @@ public class AuthService {
         profile.setDisplayName(request.getDisplayName());
         profile.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         profile.setNativeLanguage(request.getNativeLanguage());
-        profile.setLearningLanguages(request.getLearningLanguages());
+        profile.setLearningLanguages(request.getLearningLanguages().stream()
+                .map(dto -> new com.example.demo.entity.LearningLanguage(dto.getLanguageCode(),
+                        dto.getProficiencyLevel()))
+                .collect(Collectors.toList()));
 
         profile.addRole(com.example.demo.enums.AppRole.USER);
 
@@ -89,7 +93,9 @@ public class AuthService {
                 .latitude(profile.getLatitude())
                 .longitude(profile.getLongitude())
                 .nativeLanguage(profile.getNativeLanguage())
-                .learningLanguages(profile.getLearningLanguages())
+                .learningLanguages(profile.getLearningLanguages().stream()
+                        .map(ll -> new LearningLanguageDTO(ll.getLanguageCode(), ll.getProficiencyLevel()))
+                        .collect(Collectors.toList()))
                 .roles(profile.getRoles().stream()
                         .map(role -> role.getRole().name())
                         .collect(Collectors.toList()))

@@ -21,6 +21,6 @@ public class ProfileResponse {
     private Double latitude;
     private Double longitude;
     private String nativeLanguage;
-    private List<String> learningLanguages;
+    private List<LearningLanguageDTO> learningLanguages;
     private List<String> roles;
 }

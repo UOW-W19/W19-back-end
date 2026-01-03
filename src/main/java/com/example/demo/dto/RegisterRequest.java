@@ -22,5 +22,5 @@ public class RegisterRequest {
     private String displayName;
 
     private String nativeLanguage;
-    private List<String> learningLanguages;
+    private List<LearningLanguageDTO> learningLanguages;
 }

@@ -28,7 +28,9 @@ public class DataSeeder implements CommandLineRunner {
             demoUser.setPassword("demo123");
             demoUser.setDisplayName("Demo User");
             demoUser.setNativeLanguage("en");
-            demoUser.setLearningLanguages(List.of("es", "vi"));
+            demoUser.setLearningLanguages(List.of(
+                    new com.example.demo.dto.LearningLanguageDTO("es", com.example.demo.enums.ProficiencyLevel.A1),
+                    new com.example.demo.dto.LearningLanguageDTO("vi", com.example.demo.enums.ProficiencyLevel.B2)));
 
             authService.register(demoUser);
 

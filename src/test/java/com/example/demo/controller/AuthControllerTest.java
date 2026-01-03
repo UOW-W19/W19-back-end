@@ -1,6 +1,8 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.RegisterRequest;
+import com.example.demo.dto.LearningLanguageDTO;
+import com.example.demo.enums.ProficiencyLevel;
 import com.example.demo.repository.ProfileRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,7 +45,9 @@ public class AuthControllerTest {
         request.setUsername("testuser");
         request.setDisplayName("Test User");
         request.setNativeLanguage("en");
-        request.setLearningLanguages(List.of("vi", "fr"));
+        request.setLearningLanguages(List.of(
+                new LearningLanguageDTO("vi", ProficiencyLevel.B1),
+                new LearningLanguageDTO("fr", ProficiencyLevel.A1)));
 
         mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -60,16 +64,17 @@ public class AuthControllerTest {
         request.setPassword("password123");
         request.setDisplayName("No Username User");
         request.setNativeLanguage("en");
-        request.setLearningLanguages(List.of("es"));
+        request.setLearningLanguages(List.of(new LearningLanguageDTO("es", ProficiencyLevel.A2)));
 
         mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.userId").exists());
-        
+
         // Verify username was generated from email prefix
-        com.example.demo.entity.Profile profile = profileRepository.findByEmail("no-username@example.com").orElseThrow();
+        com.example.demo.entity.Profile profile = profileRepository.findByEmail("no-username@example.com")
+                .orElseThrow();
         org.junit.jupiter.api.Assertions.assertEquals("no-username", profile.getUsername());
     }
 
@@ -81,7 +86,7 @@ public class AuthControllerTest {
         request1.setPassword("password123");
         request1.setDisplayName("User 1");
         request1.setNativeLanguage("en");
-        request1.setLearningLanguages(List.of("vi"));
+        request1.setLearningLanguages(List.of(new LearningLanguageDTO("vi", ProficiencyLevel.C1)));
 
         mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)

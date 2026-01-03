@@ -15,4 +15,11 @@ public interface ProfileRepository extends JpaRepository<Profile, Long> {
     boolean existsByUsername(String username);
 
     boolean existsByEmail(String email);
+
+    @org.springframework.data.jpa.repository.Query("SELECT DISTINCT p FROM Profile p JOIN p.learningLanguages ll " +
+            "WHERE (:nativeLanguage IS NULL OR p.nativeLanguage = :nativeLanguage) " +
+            "AND (:learningLanguage IS NULL OR ll.languageCode = :learningLanguage)")
+    java.util.List<Profile> searchProfiles(
+            @org.springframework.data.repository.query.Param("nativeLanguage") String nativeLanguage,
+            @org.springframework.data.repository.query.Param("learningLanguage") String learningLanguage);
 }

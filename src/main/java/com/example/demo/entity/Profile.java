@@ -40,8 +40,7 @@ public class Profile extends BaseEntity {
 
     @ElementCollection
     @CollectionTable(name = "profile_learning_languages", joinColumns = @JoinColumn(name = "profile_id"))
-    @Column(name = "language_code")
-    private List<String> learningLanguages = new ArrayList<>();
+    private List<LearningLanguage> learningLanguages = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserRole> roles = new ArrayList<>();
