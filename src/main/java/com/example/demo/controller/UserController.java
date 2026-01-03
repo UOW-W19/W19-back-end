@@ -8,7 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping({ "/api/users", "/api/profiles" })
 @RequiredArgsConstructor
 public class UserController {
 
