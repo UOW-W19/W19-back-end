@@ -7,19 +7,20 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface ProfileRepository extends JpaRepository<Profile, Long> {
-    Optional<Profile> findByUsername(String username);
+public interface ProfileRepository extends JpaRepository<Profile, java.util.UUID> {
+        Optional<Profile> findByUsername(String username);
 
-    Optional<Profile> findByEmail(String email);
+        Optional<Profile> findByEmail(String email);
 
-    boolean existsByUsername(String username);
+        boolean existsByUsername(String username);
 
-    boolean existsByEmail(String email);
+        boolean existsByEmail(String email);
 
-    @org.springframework.data.jpa.repository.Query("SELECT DISTINCT p FROM Profile p JOIN p.learningLanguages ll " +
-            "WHERE (:nativeLanguage IS NULL OR p.nativeLanguage = :nativeLanguage) " +
-            "AND (:learningLanguage IS NULL OR ll.languageCode = :learningLanguage)")
-    java.util.List<Profile> searchProfiles(
-            @org.springframework.data.repository.query.Param("nativeLanguage") String nativeLanguage,
-            @org.springframework.data.repository.query.Param("learningLanguage") String learningLanguage);
+        @org.springframework.data.jpa.repository.Query("SELECT DISTINCT p FROM Profile p JOIN p.languages l " +
+                        "WHERE (:nativeLanguage IS NULL OR (l.language.code = :nativeLanguage AND l.isLearning = false)) "
+                        +
+                        "AND (:learningLanguage IS NULL OR (l.language.code = :learningLanguage AND l.isLearning = true))")
+        java.util.List<Profile> searchProfiles(
+                        @org.springframework.data.repository.query.Param("nativeLanguage") String nativeLanguage,
+                        @org.springframework.data.repository.query.Param("learningLanguage") String learningLanguage);
 }

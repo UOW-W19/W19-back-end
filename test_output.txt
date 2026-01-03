@@ -1,0 +1,822 @@
+﻿[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------------< com.example:demo >--------------------------
+[INFO] Building demo 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ demo ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ demo ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ demo ---
+[INFO] Copying 1 resource from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ demo ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ demo ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.example.demo.controller.AuthControllerLoginTest
+06:34:26.584 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.example.demo.controller.AuthControllerLoginTest]: AuthControllerLoginTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+06:34:26.656 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.example.demo.W19BackendApplication for test class com.example.demo.controller.AuthControllerLoginTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.0)
+
+2026-01-04T06:34:26.956+11:00  INFO 75676 --- [           main] c.e.d.c.AuthControllerLoginTest          : Starting AuthControllerLoginTest using Java 25.0.1 with PID 75676 (started by phamh in C:\Users\phamh\Desktop\W19-back-end)
+2026-01-04T06:34:26.957+11:00  INFO 75676 --- [           main] c.e.d.c.AuthControllerLoginTest          : No active profile set, falling back to 1 default profile: "default"
+2026-01-04T06:34:27.327+11:00  INFO 75676 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-01-04T06:34:27.368+11:00  INFO 75676 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 31 ms. Found 4 JPA repository interfaces.
+2026-01-04T06:34:27.637+11:00  INFO 75676 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-01-04T06:34:27.672+11:00  INFO 75676 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.3.1.Final
+2026-01-04T06:34:27.692+11:00  INFO 75676 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-01-04T06:34:27.856+11:00  INFO 75676 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-01-04T06:34:27.872+11:00  INFO 75676 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-01-04T06:34:27.982+11:00  INFO 75676 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:testdb user=SA
+2026-01-04T06:34:27.983+11:00  INFO 75676 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-01-04T06:34:27.997+11:00  WARN 75676 --- [           main] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-01-04T06:34:28.541+11:00  INFO 75676 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+Hibernate: 
+    drop table if exists languages cascade 
+Hibernate: 
+    drop table if exists profiles cascade 
+Hibernate: 
+    drop table if exists refresh_tokens cascade 
+Hibernate: 
+    drop table if exists user_languages cascade 
+Hibernate: 
+    drop table if exists user_roles cascade 
+Hibernate: 
+    create table languages (
+        code varchar(10) not null,
+        flag_emoji varchar(255),
+        name varchar(255) not null,
+        native_name varchar(255),
+        primary key (code)
+    )
+Hibernate: 
+    create table profiles (
+        current integer not null,
+        latitude float(53),
+        longest integer not null,
+        longitude float(53),
+        created_at timestamp(6),
+        updated_at timestamp(6),
+        id uuid not null,
+        avatar_url varchar(255),
+        bio TEXT,
+        display_name varchar(255),
+        email varchar(255) not null unique,
+        password_hash varchar(255) not null,
+        username varchar(255) unique,
+        primary key (id)
+    )
+Hibernate: 
+    create table refresh_tokens (
+        expiry_date timestamp(6) with time zone not null,
+        id bigint generated by default as identity,
+        profile_id uuid unique,
+        token varchar(255) not null unique,
+        primary key (id)
+    )
+Hibernate: 
+    create table user_languages (
+        is_learning boolean,
+        id bigint generated by default as identity,
+        language_code varchar(10) not null,
+        profile_id uuid not null,
+        proficiency varchar(255) check (proficiency in ('A1','A2','B1','B2','C1','C2','NATIVE')),
+        primary key (id)
+    )
+Hibernate: 
+    create table user_roles (
+        created_at timestamp(6),
+        updated_at timestamp(6),
+        id uuid not null,
+        user_id uuid not null,
+        role varchar(255) not null check (role in ('USER','MOD','ADMIN')),
+        primary key (id)
+    )
+Hibernate: 
+    alter table if exists refresh_tokens 
+       add constraint FKehgddh48nm9evfpudpn5jwtkh 
+       foreign key (profile_id) 
+       references profiles
+Hibernate: 
+    alter table if exists user_languages 
+       add constraint FKajla6pk1msedrs5mpwyfx9gux 
+       foreign key (language_code) 
+       references languages
+Hibernate: 
+    alter table if exists user_languages 
+       add constraint FK51hnvt3d8piam9qhst8w72ahj 
+       foreign key (profile_id) 
+       references profiles
+Hibernate: 
+    alter table if exists user_roles 
+       add constraint FKdrb4vrg4gk96jt3j4o66asbm2 
+       foreign key (user_id) 
+       references profiles
+2026-01-04T06:34:28.582+11:00  INFO 75676 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-01-04T06:34:28.834+11:00  INFO 75676 --- [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-01-04T06:34:29.241+11:00  WARN 75676 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-01-04T06:34:29.411+11:00  INFO 75676 --- [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@2a3d9ed3, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@339ecd3f, org.springframework.security.web.context.SecurityContextHolderFilter@ccdd8a6, org.springframework.security.web.header.HeaderWriterFilter@1bb3d045, org.springframework.web.filter.CorsFilter@15f12e7b, org.springframework.security.web.authentication.logout.LogoutFilter@1b9b8759, com.example.demo.security.JwtAuthenticationFilter@775429c8, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@597ae16a, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@734901c1, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@102fcc80, org.springframework.security.web.session.SessionManagementFilter@52da1357, org.springframework.security.web.access.ExceptionTranslationFilter@54898111, org.springframework.security.web.access.intercept.AuthorizationFilter@7b9c54c7]
+2026-01-04T06:34:29.596+11:00  INFO 75676 --- [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-01-04T06:34:29.596+11:00  INFO 75676 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-01-04T06:34:29.597+11:00  INFO 75676 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-01-04T06:34:29.606+11:00  INFO 75676 --- [           main] c.e.d.c.AuthControllerLoginTest          : Started AuthControllerLoginTest in 2.857 seconds (process running for 3.412)
+Hibernate: 
+    select
+        count(*) 
+    from
+        profiles p1_0
+2026-01-04T06:34:29.662+11:00  INFO 75676 --- [           main] com.example.demo.config.DataSeeder       : Seeding demo data...
+Hibernate: 
+    select
+        l1_0.code,
+        l1_0.flag_emoji,
+        l1_0.name,
+        l1_0.native_name 
+    from
+        languages l1_0 
+    where
+        l1_0.code=?
+Hibernate: 
+    select
+        l1_0.code,
+        l1_0.flag_emoji,
+        l1_0.name,
+        l1_0.native_name 
+    from
+        languages l1_0 
+    where
+        l1_0.code=?
+Hibernate: 
+    select
+        l1_0.code,
+        l1_0.flag_emoji,
+        l1_0.name,
+        l1_0.native_name 
+    from
+        languages l1_0 
+    where
+        l1_0.code=?
+Hibernate: 
+    insert 
+    into
+        languages
+        (flag_emoji, name, native_name, code) 
+    values
+        (?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        languages
+        (flag_emoji, name, native_name, code) 
+    values
+        (?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        languages
+        (flag_emoji, name, native_name, code) 
+    values
+        (?, ?, ?, ?)
+Hibernate: 
+    select
+        p1_0.id 
+    from
+        profiles p1_0 
+    where
+        p1_0.email=? 
+    fetch
+        first ? rows only
+Hibernate: 
+    select
+        p1_0.id 
+    from
+        profiles p1_0 
+    where
+        p1_0.username=? 
+    fetch
+        first ? rows only
+Hibernate: 
+    select
+        rt1_0.id,
+        rt1_0.expiry_date,
+        rt1_0.profile_id,
+        rt1_0.token 
+    from
+        refresh_tokens rt1_0 
+    where
+        rt1_0.profile_id=?
+Hibernate: 
+    insert 
+    into
+        profiles
+        (avatar_url, bio, created_at, display_name, email, latitude, longitude, password_hash, current, longest, updated_at, username, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        user_roles
+        (created_at, role, updated_at, user_id, id) 
+    values
+        (?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        refresh_tokens
+        (expiry_date, profile_id, token, id) 
+    values
+        (?, ?, ?, default)
+Hibernate: 
+    select
+        p1_0.id,
+        p1_0.avatar_url,
+        p1_0.bio,
+        p1_0.created_at,
+        p1_0.display_name,
+        p1_0.email,
+        p1_0.latitude,
+        p1_0.longitude,
+        p1_0.password_hash,
+        p1_0.current,
+        p1_0.longest,
+        p1_0.updated_at,
+        p1_0.username 
+    from
+        profiles p1_0 
+    where
+        p1_0.email=?
+Hibernate: 
+    select
+        rt1_0.id,
+        rt1_0.expiry_date,
+        p1_0.id,
+        p1_0.avatar_url,
+        p1_0.bio,
+        p1_0.created_at,
+        p1_0.display_name,
+        p1_0.email,
+        p1_0.latitude,
+        p1_0.longitude,
+        p1_0.password_hash,
+        p1_0.current,
+        p1_0.longest,
+        p1_0.updated_at,
+        p1_0.username,
+        rt1_0.token 
+    from
+        refresh_tokens rt1_0 
+    left join
+        profiles p1_0 
+            on p1_0.id=rt1_0.profile_id 
+    where
+        rt1_0.profile_id=?
+Hibernate: 
+    select
+        null,
+        l1_0.flag_emoji,
+        l1_0.name,
+        l1_0.native_name 
+    from
+        languages l1_0 
+    where
+        l1_0.code=?
+Hibernate: 
+    insert 
+    into
+        user_languages
+        (is_learning, language_code, proficiency, profile_id, id) 
+    values
+        (?, ?, ?, ?, default)
+Hibernate: 
+    select
+        null,
+        l1_0.flag_emoji,
+        l1_0.name,
+        l1_0.native_name 
+    from
+        languages l1_0 
+    where
+        l1_0.code=?
+Hibernate: 
+    insert 
+    into
+        user_languages
+        (is_learning, language_code, proficiency, profile_id, id) 
+    values
+        (?, ?, ?, ?, default)
+2026-01-04T06:34:29.905+11:00  INFO 75676 --- [           main] com.example.demo.config.DataSeeder       : Demo data seeded successfully! You can now login with demo@locale.app / demo123
+Hibernate: 
+    select
+        p1_0.id,
+        p1_0.avatar_url,
+        p1_0.bio,
+        p1_0.created_at,
+        p1_0.display_name,
+        p1_0.email,
+        p1_0.latitude,
+        p1_0.longitude,
+        p1_0.password_hash,
+        p1_0.current,
+        p1_0.longest,
+        p1_0.updated_at,
+        p1_0.username 
+    from
+        profiles p1_0
+Hibernate: 
+    select
+        rt1_0.id,
+        rt1_0.expiry_date,
+        p1_0.id,
+        p1_0.avatar_url,
+        p1_0.bio,
+        p1_0.created_at,
+        p1_0.display_name,
+        p1_0.email,
+        p1_0.latitude,
+        p1_0.longitude,
+        p1_0.password_hash,
+        p1_0.current,
+        p1_0.longest,
+        p1_0.updated_at,
+        p1_0.username,
+        rt1_0.token 
+    from
+        refresh_tokens rt1_0 
+    left join
+        profiles p1_0 
+            on p1_0.id=rt1_0.profile_id 
+    where
+        rt1_0.profile_id=?
+Hibernate: 
+    select
+        l1_0.profile_id,
+        l1_0.id,
+        l1_0.is_learning,
+        l1_0.language_code,
+        l1_0.proficiency 
+    from
+        user_languages l1_0 
+    where
+        l1_0.profile_id=?
+Hibernate: 
+    select
+        r1_0.user_id,
+        r1_0.id,
+        r1_0.created_at,
+        r1_0.role,
+        r1_0.updated_at 
+    from
+        user_roles r1_0 
+    where
+        r1_0.user_id=?
+Hibernate: 
+    delete 
+    from
+        user_languages 
+    where
+        id=?
+Hibernate: 
+    delete 
+    from
+        user_languages 
+    where
+        id=?
+Hibernate: 
+    delete 
+    from
+        refresh_tokens 
+    where
+        id=?
+Hibernate: 
+    delete 
+    from
+        user_roles 
+    where
+        id=?
+Hibernate: 
+    delete 
+    from
+        profiles 
+    where
+        id=?
+Hibernate: 
+    select
+        p1_0.id 
+    from
+        profiles p1_0 
+    where
+        p1_0.email=? 
+    fetch
+        first ? rows only
+Hibernate: 
+    select
+        p1_0.id 
+    from
+        profiles p1_0 
+    where
+        p1_0.username=? 
+    fetch
+        first ? rows only
+Hibernate: 
+    select
+        rt1_0.id,
+        rt1_0.expiry_date,
+        rt1_0.profile_id,
+        rt1_0.token 
+    from
+        refresh_tokens rt1_0 
+    where
+        rt1_0.profile_id=?
+Hibernate: 
+    insert 
+    into
+        profiles
+        (avatar_url, bio, created_at, display_name, email, latitude, longitude, password_hash, current, longest, updated_at, username, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        user_roles
+        (created_at, role, updated_at, user_id, id) 
+    values
+        (?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        refresh_tokens
+        (expiry_date, profile_id, token, id) 
+    values
+        (?, ?, ?, default)
+Hibernate: 
+    select
+        p1_0.id,
+        p1_0.avatar_url,
+        p1_0.bio,
+        p1_0.created_at,
+        p1_0.display_name,
+        p1_0.email,
+        p1_0.latitude,
+        p1_0.longitude,
+        p1_0.password_hash,
+        p1_0.current,
+        p1_0.longest,
+        p1_0.updated_at,
+        p1_0.username 
+    from
+        profiles p1_0 
+    where
+        p1_0.email=?
+Hibernate: 
+    select
+        rt1_0.id,
+        rt1_0.expiry_date,
+        p1_0.id,
+        p1_0.avatar_url,
+        p1_0.bio,
+        p1_0.created_at,
+        p1_0.display_name,
+        p1_0.email,
+        p1_0.latitude,
+        p1_0.longitude,
+        p1_0.password_hash,
+        p1_0.current,
+        p1_0.longest,
+        p1_0.updated_at,
+        p1_0.username,
+        rt1_0.token 
+    from
+        refresh_tokens rt1_0 
+    left join
+        profiles p1_0 
+            on p1_0.id=rt1_0.profile_id 
+    where
+        rt1_0.profile_id=?
+Hibernate: 
+    select
+        r1_0.user_id,
+        r1_0.id,
+        r1_0.created_at,
+        r1_0.role,
+        r1_0.updated_at 
+    from
+        user_roles r1_0 
+    where
+        r1_0.user_id=?
+Hibernate: 
+    select
+        p1_0.id,
+        p1_0.avatar_url,
+        p1_0.bio,
+        p1_0.created_at,
+        p1_0.display_name,
+        p1_0.email,
+        p1_0.latitude,
+        p1_0.longitude,
+        p1_0.password_hash,
+        p1_0.current,
+        p1_0.longest,
+        p1_0.updated_at,
+        p1_0.username 
+    from
+        profiles p1_0 
+    where
+        p1_0.email=?
+Hibernate: 
+    select
+        rt1_0.id,
+        rt1_0.expiry_date,
+        rt1_0.profile_id,
+        rt1_0.token 
+    from
+        refresh_tokens rt1_0 
+    where
+        rt1_0.profile_id=?
+Hibernate: 
+    insert 
+    into
+        refresh_tokens
+        (expiry_date, profile_id, token, id) 
+    values
+        (?, ?, ?, default)
+2026-01-04T06:34:30.405+11:00  WARN 75676 --- [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Error: 23505, SQLState: 23505
+2026-01-04T06:34:30.406+11:00 ERROR 75676 --- [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : Unique index or primary key violation: "PUBLIC.CONSTRAINT_INDEX_C ON PUBLIC.REFRESH_TOKENS(PROFILE_ID NULLS FIRST) VALUES ( /* 2 */ UUID '8f932f6b-124f-4e56-a0ac-684c7f5d9228' )"; SQL statement:
+insert into refresh_tokens (expiry_date,profile_id,token,id) values (?,?,?,default) [23505-224]
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/auth/login
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"54"]
+             Body = {"email":"login@example.com","password":"password123"}
+    Session Attrs = {}
+
+Handler:
+             Type = com.example.demo.controller.AuthController
+           Method = com.example.demo.controller.AuthController#login(LoginRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = org.springframework.dao.DataIntegrityViolationException
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 400
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"error":"could not execute statement [Unique index or primary key violation: \"PUBLIC.CONSTRAINT_INDEX_C ON PUBLIC.REFRESH_TOKENS(PROFILE_ID NULLS FIRST) VALUES ( /* 2 */ UUID '8f932f6b-124f-4e56-a0ac-684c7f5d9228' )\"; SQL statement:\ninsert into refresh_tokens (expiry_date,profile_id,token,id) values (?,?,?,default) [23505-224]] [insert into refresh_tokens (expiry_date,profile_id,token,id) values (?,?,?,default)]; SQL [insert into refresh_tokens (expiry_date,profile_id,token,id) values (?,?,?,default)]; constraint [\"PUBLIC.CONSTRAINT_INDEX_C ON PUBLIC.REFRESH_TOKENS(PROFILE_ID NULLS FIRST) VALUES ( /* 2 */ UUID '8f932f6b-124f-4e56-a0ac-684c7f5d9228' )\"; SQL statement:\ninsert into refresh_tokens (expiry_date,profile_id,token,id) values (?,?,?,default) [23505-224]]"}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+Hibernate: 
+    select
+        p1_0.id,
+        p1_0.avatar_url,
+        p1_0.bio,
+        p1_0.created_at,
+        p1_0.display_name,
+        p1_0.email,
+        p1_0.latitude,
+        p1_0.longitude,
+        p1_0.password_hash,
+        p1_0.current,
+        p1_0.longest,
+        p1_0.updated_at,
+        p1_0.username 
+    from
+        profiles p1_0
+Hibernate: 
+    select
+        rt1_0.id,
+        rt1_0.expiry_date,
+        p1_0.id,
+        p1_0.avatar_url,
+        p1_0.bio,
+        p1_0.created_at,
+        p1_0.display_name,
+        p1_0.email,
+        p1_0.latitude,
+        p1_0.longitude,
+        p1_0.password_hash,
+        p1_0.current,
+        p1_0.longest,
+        p1_0.updated_at,
+        p1_0.username,
+        rt1_0.token 
+    from
+        refresh_tokens rt1_0 
+    left join
+        profiles p1_0 
+            on p1_0.id=rt1_0.profile_id 
+    where
+        rt1_0.profile_id=?
+Hibernate: 
+    select
+        l1_0.profile_id,
+        l1_0.id,
+        l1_0.is_learning,
+        l1_0.language_code,
+        l1_0.proficiency 
+    from
+        user_languages l1_0 
+    where
+        l1_0.profile_id=?
+Hibernate: 
+    select
+        r1_0.user_id,
+        r1_0.id,
+        r1_0.created_at,
+        r1_0.role,
+        r1_0.updated_at 
+    from
+        user_roles r1_0 
+    where
+        r1_0.user_id=?
+Hibernate: 
+    delete 
+    from
+        refresh_tokens 
+    where
+        id=?
+Hibernate: 
+    delete 
+    from
+        user_roles 
+    where
+        id=?
+Hibernate: 
+    delete 
+    from
+        profiles 
+    where
+        id=?
+Hibernate: 
+    select
+        p1_0.id 
+    from
+        profiles p1_0 
+    where
+        p1_0.email=? 
+    fetch
+        first ? rows only
+Hibernate: 
+    select
+        p1_0.id 
+    from
+        profiles p1_0 
+    where
+        p1_0.username=? 
+    fetch
+        first ? rows only
+Hibernate: 
+    select
+        rt1_0.id,
+        rt1_0.expiry_date,
+        rt1_0.profile_id,
+        rt1_0.token 
+    from
+        refresh_tokens rt1_0 
+    where
+        rt1_0.profile_id=?
+Hibernate: 
+    insert 
+    into
+        profiles
+        (avatar_url, bio, created_at, display_name, email, latitude, longitude, password_hash, current, longest, updated_at, username, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        user_roles
+        (created_at, role, updated_at, user_id, id) 
+    values
+        (?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        refresh_tokens
+        (expiry_date, profile_id, token, id) 
+    values
+        (?, ?, ?, default)
+Hibernate: 
+    select
+        p1_0.id,
+        p1_0.avatar_url,
+        p1_0.bio,
+        p1_0.created_at,
+        p1_0.display_name,
+        p1_0.email,
+        p1_0.latitude,
+        p1_0.longitude,
+        p1_0.password_hash,
+        p1_0.current,
+        p1_0.longest,
+        p1_0.updated_at,
+        p1_0.username 
+    from
+        profiles p1_0 
+    where
+        p1_0.email=?
+Hibernate: 
+    select
+        rt1_0.id,
+        rt1_0.expiry_date,
+        p1_0.id,
+        p1_0.avatar_url,
+        p1_0.bio,
+        p1_0.created_at,
+        p1_0.display_name,
+        p1_0.email,
+        p1_0.latitude,
+        p1_0.longitude,
+        p1_0.password_hash,
+        p1_0.current,
+        p1_0.longest,
+        p1_0.updated_at,
+        p1_0.username,
+        rt1_0.token 
+    from
+        refresh_tokens rt1_0 
+    left join
+        profiles p1_0 
+            on p1_0.id=rt1_0.profile_id 
+    where
+        rt1_0.profile_id=?
+Hibernate: 
+    select
+        r1_0.user_id,
+        r1_0.id,
+        r1_0.created_at,
+        r1_0.role,
+        r1_0.updated_at 
+    from
+        user_roles r1_0 
+    where
+        r1_0.user_id=?
+[ERROR] Tests run: 2, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 4.061 s <<< FAILURE! -- in com.example.demo.controller.AuthControllerLoginTest
+[ERROR] com.example.demo.controller.AuthControllerLoginTest.shouldLoginSuccessfully -- Time elapsed: 0.515 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<200> but was:<400>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
+	at org.springframework.test.web.servlet.result.StatusResultMatchers.lambda$matcher$9(StatusResultMatchers.java:637)
+	at org.springframework.test.web.servlet.MockMvc$1.andExpect(MockMvc.java:214)
+	at com.example.demo.controller.AuthControllerLoginTest.shouldLoginSuccessfully(AuthControllerLoginTest.java:59)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Failures: 
+[ERROR]   AuthControllerLoginTest.shouldLoginSuccessfully:59 Status expected:<200> but was:<400>
+[INFO] 
+[ERROR] Tests run: 2, Failures: 1, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  5.359 s
+[INFO] Finished at: 2026-01-04T06:34:30+11:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.1.2:test (default-test) on project demo: There are test failures.
+[ERROR] 
+[ERROR] Please refer to C:\Users\phamh\Desktop\W19-back-end\target\surefire-reports for the individual test results.
+[ERROR] Please refer to dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

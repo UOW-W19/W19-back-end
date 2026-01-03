@@ -6,7 +6,8 @@ import lombok.Data;
 @Data
 @Builder
 public class AuthResponse {
-    private Long userId;
+    private java.util.UUID userId;
     private String accessToken;
     private String refreshToken;
+    private Long expiresIn;
 }

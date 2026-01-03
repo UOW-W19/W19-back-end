@@ -3,9 +3,10 @@ package com.example.demo.service;
 import com.example.demo.dto.AuthResponse;
 import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.ProfileResponse;
-import com.example.demo.dto.LearningLanguageDTO;
+import com.example.demo.dto.UserLanguageDTO;
 import com.example.demo.dto.RegisterRequest;
 import com.example.demo.entity.Profile;
+import com.example.demo.entity.Streak;
 import com.example.demo.repository.ProfileRepository;
 import com.example.demo.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
@@ -21,84 +22,155 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final ProfileRepository profileRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtUtils jwtUtils;
-    private final AuthenticationManager authenticationManager;
+        private final ProfileRepository profileRepository;
+        private final PasswordEncoder passwordEncoder;
+        private final JwtUtils jwtUtils;
+        private final AuthenticationManager authenticationManager;
+        private final RefreshTokenService refreshTokenService;
 
-    public AuthResponse login(LoginRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()));
-        Profile user = profileRepository.findByEmail(request.getEmail())
-                .orElseThrow();
-        String jwtToken = jwtUtils.generateToken(user.getEmail());
-        return AuthResponse.builder()
-                .userId(user.getId())
-                .accessToken(jwtToken)
-                .build();
-    }
+        @org.springframework.beans.factory.annotation.Value("${app.jwt.expiration-ms}")
+        private Long jwtExpirationMs;
 
-    @Transactional
-    public AuthResponse register(RegisterRequest request) {
-        if (profileRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already taken");
+        public AuthResponse login(LoginRequest request) {
+                authenticationManager.authenticate(
+                                new UsernamePasswordAuthenticationToken(
+                                                request.getEmail(),
+                                                request.getPassword()));
+                Profile user = profileRepository.findByEmail(request.getEmail())
+                                .orElseThrow();
+                String jwtToken = jwtUtils.generateToken(user.getEmail());
+                com.example.demo.entity.RefreshToken refreshToken = refreshTokenService
+                                .createRefreshToken(user.getId());
+
+                return AuthResponse.builder()
+                                .userId(user.getId())
+                                .accessToken(jwtToken)
+                                .refreshToken(refreshToken.getToken())
+                                .expiresIn(jwtExpirationMs / 1000)
+                                .build();
         }
 
-        String username = request.getUsername();
-        if (username == null || username.isBlank()) {
-            username = request.getEmail().split("@")[0];
+        @Transactional
+        public AuthResponse register(RegisterRequest request) {
+                if (profileRepository.existsByEmail(request.getEmail())) {
+                        throw new RuntimeException("Email already taken");
+                }
+
+                String username = request.getUsername();
+                if (username == null || username.isBlank()) {
+                        username = request.getEmail().split("@")[0];
+                }
+
+                if (profileRepository.existsByUsername(username)) {
+                        username = username + System.currentTimeMillis() % 1000;
+                }
+
+                Profile profile = new Profile();
+                profile.setEmail(request.getEmail());
+                profile.setUsername(username);
+                profile.setDisplayName(request.getDisplayName());
+                profile.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+
+                profile.addRole(com.example.demo.enums.AppRole.USER);
+
+                Profile savedProfile = profileRepository.save(profile);
+
+                // Note: RegisterRequest still has old language fields?
+                // I should probably update RegisterRequest or handle it here
+                // For now, let's just save the profile.
+
+                String jwtToken = jwtUtils.generateToken(savedProfile.getEmail());
+                com.example.demo.entity.RefreshToken refreshToken = refreshTokenService
+                                .createRefreshToken(savedProfile.getId());
+
+                return AuthResponse.builder()
+                                .userId(savedProfile.getId())
+                                .accessToken(jwtToken)
+                                .refreshToken(refreshToken.getToken())
+                                .expiresIn(jwtExpirationMs / 1000)
+                                .build();
         }
 
-        if (profileRepository.existsByUsername(username)) {
-            username = username + System.currentTimeMillis() % 1000;
+        @Transactional(readOnly = true)
+        public ProfileResponse getProfileByEmail(String email) {
+                Profile profile = profileRepository.findByEmail(email)
+                                .orElseThrow(() -> new RuntimeException("Profile not found"));
+
+                return mapToResponse(profile);
         }
 
-        Profile profile = new Profile();
-        profile.setEmail(request.getEmail());
-        profile.setUsername(username);
-        profile.setDisplayName(request.getDisplayName());
-        profile.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        profile.setNativeLanguage(request.getNativeLanguage());
-        profile.setLearningLanguages(request.getLearningLanguages().stream()
-                .map(dto -> new com.example.demo.entity.LearningLanguage(dto.getLanguageCode(),
-                        dto.getProficiencyLevel()))
-                .collect(Collectors.toList()));
+        private ProfileResponse mapToResponse(Profile profile) {
+                return ProfileResponse.builder()
+                                .id(profile.getId())
+                                .username(profile.getUsername())
+                                .email(profile.getEmail())
+                                .displayName(profile.getDisplayName())
+                                .avatarUrl(profile.getAvatarUrl())
+                                .bio(profile.getBio())
+                                .latitude(profile.getLatitude())
+                                .longitude(profile.getLongitude())
+                                .streak(profile.getStreak())
+                                .createdAt(profile.getCreatedAt() != null ? profile.getCreatedAt()
+                                                .atZone(java.time.ZoneId.systemDefault()).toInstant() : null)
+                                .languages(profile.getLanguages().stream()
+                                                .map(ul -> UserLanguageDTO.builder()
+                                                                .code(ul.getLanguage().getCode())
+                                                                .name(ul.getLanguage().getName())
+                                                                .flagEmoji(ul.getLanguage().getFlagEmoji())
+                                                                .proficiency(ul.getProficiency())
+                                                                .isLearning(ul.isLearning())
+                                                                .build())
+                                                .collect(Collectors.toList()))
+                                .roles(profile.getRoles().stream()
+                                                .map(role -> role.getRole().name())
+                                                .collect(Collectors.toList()))
+                                .build();
+        }
 
-        profile.addRole(com.example.demo.enums.AppRole.USER);
+        @Transactional
+        public AuthResponse refreshToken(com.example.demo.dto.TokenRefreshRequest request) {
+                String requestRefreshToken = request.getRefreshToken();
 
-        Profile savedProfile = profileRepository.save(profile);
+                return refreshTokenService.findByToken(requestRefreshToken)
+                                .map(refreshTokenService::verifyExpiration)
+                                .map(com.example.demo.entity.RefreshToken::getProfile)
+                                .map(user -> {
+                                        String token = jwtUtils.generateToken(user.getEmail());
+                                        // Rotate refresh token (optional but recommended)
+                                        com.example.demo.entity.RefreshToken newRefreshToken = refreshTokenService
+                                                        .createRefreshToken(user.getId());
+                                        return AuthResponse.builder()
+                                                        .userId(user.getId())
+                                                        .accessToken(token)
+                                                        .refreshToken(newRefreshToken.getToken())
+                                                        .expiresIn(jwtExpirationMs / 1000)
+                                                        .build();
+                                })
+                                .orElseThrow(() -> new RuntimeException("Refresh token is not in database!"));
+        }
 
-        String jwtToken = jwtUtils.generateToken(savedProfile.getEmail());
+        @Transactional
+        public ProfileResponse updateProfile(String email, java.util.Map<String, Object> updates) {
+                Profile profile = profileRepository.findByEmail(email)
+                                .orElseThrow(() -> new RuntimeException("Profile not found"));
 
-        return AuthResponse.builder()
-                .userId(savedProfile.getId())
-                .accessToken(jwtToken)
-                .build();
-    }
+                if (updates.containsKey("displayName")) {
+                        profile.setDisplayName((String) updates.get("displayName"));
+                }
+                if (updates.containsKey("bio")) {
+                        profile.setBio((String) updates.get("bio"));
+                }
+                if (updates.containsKey("avatarUrl")) {
+                        profile.setAvatarUrl((String) updates.get("avatarUrl"));
+                }
 
-    @Transactional(readOnly = true)
-    public ProfileResponse getProfileByEmail(String email) {
-        Profile profile = profileRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Profile not found"));
+                return mapToResponse(profileRepository.save(profile));
+        }
 
-        return ProfileResponse.builder()
-                .id(profile.getId())
-                .username(profile.getUsername())
-                .email(profile.getEmail())
-                .displayName(profile.getDisplayName())
-                .avatarUrl(profile.getAvatarUrl())
-                .bio(profile.getBio())
-                .latitude(profile.getLatitude())
-                .longitude(profile.getLongitude())
-                .nativeLanguage(profile.getNativeLanguage())
-                .learningLanguages(profile.getLearningLanguages().stream()
-                        .map(ll -> new LearningLanguageDTO(ll.getLanguageCode(), ll.getProficiencyLevel()))
-                        .collect(Collectors.toList()))
-                .roles(profile.getRoles().stream()
-                        .map(role -> role.getRole().name())
-                        .collect(Collectors.toList()))
-                .build();
-    }
+        @Transactional
+        public void logout(String email) {
+                Profile user = profileRepository.findByEmail(email)
+                                .orElseThrow(() -> new RuntimeException("Profile not found"));
+                refreshTokenService.deleteByProfileId(user.getId());
+        }
 }

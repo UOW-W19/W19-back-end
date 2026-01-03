@@ -1,9 +1,8 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.RegisterRequest;
-import com.example.demo.dto.LearningLanguageDTO;
-import com.example.demo.enums.ProficiencyLevel;
 import com.example.demo.repository.ProfileRepository;
+import com.example.demo.repository.RefreshTokenRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,85 +22,82 @@ import java.util.List;
 @AutoConfigureMockMvc
 public class AuthControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @Autowired
-    private ProfileRepository profileRepository;
+        @Autowired
+        private ProfileRepository profileRepository;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+        @Autowired
+        private RefreshTokenRepository refreshTokenRepository;
 
-    @BeforeEach
-    void tearDown() {
-        profileRepository.deleteAll();
-    }
+        @Autowired
+        private ObjectMapper objectMapper;
 
-    @Test
-    void shouldRegisterUserSuccessfully() throws Exception {
-        RegisterRequest request = new RegisterRequest();
-        request.setEmail("test@example.com");
-        request.setPassword("password123");
-        request.setUsername("testuser");
-        request.setDisplayName("Test User");
-        request.setNativeLanguage("en");
-        request.setLearningLanguages(List.of(
-                new LearningLanguageDTO("vi", ProficiencyLevel.B1),
-                new LearningLanguageDTO("fr", ProficiencyLevel.A1)));
+        @BeforeEach
+        void tearDown() {
+                refreshTokenRepository.deleteAll();
+                profileRepository.deleteAll();
+        }
 
-        mockMvc.perform(post("/api/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.userId").exists())
-                .andExpect(jsonPath("$.accessToken").exists());
-    }
+        @Test
+        void shouldRegisterUserSuccessfully() throws Exception {
+                RegisterRequest request = new RegisterRequest();
+                request.setEmail("test@example.com");
+                request.setPassword("password123");
+                request.setUsername("testuser");
+                request.setDisplayName("Test User");
 
-    @Test
-    void shouldRegisterUserWithoutUsername() throws Exception {
-        RegisterRequest request = new RegisterRequest();
-        request.setEmail("no-username@example.com");
-        request.setPassword("password123");
-        request.setDisplayName("No Username User");
-        request.setNativeLanguage("en");
-        request.setLearningLanguages(List.of(new LearningLanguageDTO("es", ProficiencyLevel.A2)));
+                mockMvc.perform(post("/api/auth/register")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                                .andExpect(status().isCreated())
+                                .andExpect(jsonPath("$.userId").exists())
+                                .andExpect(jsonPath("$.accessToken").exists());
+        }
 
-        mockMvc.perform(post("/api/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.userId").exists());
+        @Test
+        void shouldRegisterUserWithoutUsername() throws Exception {
+                RegisterRequest request = new RegisterRequest();
+                request.setEmail("register_no_username@example.com");
+                request.setPassword("password123");
+                request.setDisplayName("No Username User");
 
-        // Verify username was generated from email prefix
-        com.example.demo.entity.Profile profile = profileRepository.findByEmail("no-username@example.com")
-                .orElseThrow();
-        org.junit.jupiter.api.Assertions.assertEquals("no-username", profile.getUsername());
-    }
+                mockMvc.perform(post("/api/auth/register")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                                .andExpect(status().isCreated())
+                                .andExpect(jsonPath("$.userId").exists());
 
-    @Test
-    void shouldFailRegistrationWithDuplicateEmail() throws Exception {
-        // Create existing user
-        RegisterRequest request1 = new RegisterRequest();
-        request1.setEmail("duplicate@example.com");
-        request1.setPassword("password123");
-        request1.setDisplayName("User 1");
-        request1.setNativeLanguage("en");
-        request1.setLearningLanguages(List.of(new LearningLanguageDTO("vi", ProficiencyLevel.C1)));
+                // Verify username was generated from email prefix
+                com.example.demo.entity.Profile profile = profileRepository
+                                .findByEmail("register_no_username@example.com")
+                                .orElseThrow();
+                org.junit.jupiter.api.Assertions.assertEquals("register_no_username", profile.getUsername());
+        }
 
-        mockMvc.perform(post("/api/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request1)))
-                .andExpect(status().isCreated());
+        @Test
+        void shouldFailRegistrationWithDuplicateEmail() throws Exception {
+                // Create existing user
+                RegisterRequest request1 = new RegisterRequest();
+                request1.setEmail("duplicate@example.com");
+                request1.setPassword("password123");
+                request1.setDisplayName("User 1");
 
-        // Try to register again with same email
-        RegisterRequest request2 = new RegisterRequest();
-        request2.setEmail("duplicate@example.com");
-        request2.setPassword("password123");
-        request2.setDisplayName("User 2");
+                mockMvc.perform(post("/api/auth/register")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request1)))
+                                .andExpect(status().isCreated());
 
-        mockMvc.perform(post("/api/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request2)))
-                .andExpect(status().isBadRequest());
-    }
+                // Try to register again with same email
+                RegisterRequest request2 = new RegisterRequest();
+                request2.setEmail("duplicate@example.com");
+                request2.setPassword("password123");
+                request2.setDisplayName("User 2");
+
+                mockMvc.perform(post("/api/auth/register")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request2)))
+                                .andExpect(status().isBadRequest());
+        }
 }

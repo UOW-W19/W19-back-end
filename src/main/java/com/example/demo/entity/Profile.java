@@ -36,14 +36,17 @@ public class Profile extends BaseEntity {
     private Double latitude;
     private Double longitude;
 
-    private String nativeLanguage;
+    @Embedded
+    private Streak streak = new Streak(0, 0);
 
-    @ElementCollection
-    @CollectionTable(name = "profile_learning_languages", joinColumns = @JoinColumn(name = "profile_id"))
-    private List<LearningLanguage> learningLanguages = new ArrayList<>();
+    @OneToMany(mappedBy = "profile", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserLanguage> languages = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserRole> roles = new ArrayList<>();
+
+    @OneToOne(mappedBy = "profile", cascade = CascadeType.ALL, orphanRemoval = true)
+    private RefreshToken refreshToken;
 
     public void addRole(AppRole role) {
         UserRole userRole = new UserRole();

@@ -20,7 +20,4 @@ public class RegisterRequest {
 
     @NotBlank
     private String displayName;
-
-    private String nativeLanguage;
-    private List<LearningLanguageDTO> learningLanguages;
 }
