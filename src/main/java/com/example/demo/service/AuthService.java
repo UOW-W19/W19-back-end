@@ -6,7 +6,7 @@ import com.example.demo.dto.ProfileResponse;
 import com.example.demo.dto.UserLanguageDTO;
 import com.example.demo.dto.RegisterRequest;
 import com.example.demo.entity.Profile;
-import com.example.demo.entity.Streak;
+
 import com.example.demo.repository.ProfileRepository;
 import com.example.demo.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +27,8 @@ public class AuthService {
         private final JwtUtils jwtUtils;
         private final AuthenticationManager authenticationManager;
         private final RefreshTokenService refreshTokenService;
+        private final com.example.demo.repository.PostRepository postRepository;
+        private final com.example.demo.repository.FollowRepository followRepository;
 
         @org.springframework.beans.factory.annotation.Value("${app.jwt.expiration-ms}")
         private Long jwtExpirationMs;
@@ -124,6 +126,9 @@ public class AuthService {
                                 .roles(profile.getRoles().stream()
                                                 .map(role -> role.getRole().name())
                                                 .collect(Collectors.toList()))
+                                .postsCount(postRepository.countByAuthorId(profile.getId()))
+                                .followersCount(followRepository.countByFollowingId(profile.getId()))
+                                .followingCount(followRepository.countByFollowerId(profile.getId()))
                                 .build();
         }
 

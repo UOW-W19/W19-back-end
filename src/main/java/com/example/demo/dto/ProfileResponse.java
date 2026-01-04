@@ -26,4 +26,8 @@ public class ProfileResponse {
     private java.time.Instant createdAt;
     private List<UserLanguageDTO> languages;
     private List<String> roles;
+    private long followersCount;
+    private long followingCount;
+    private long postsCount;
+
 }
