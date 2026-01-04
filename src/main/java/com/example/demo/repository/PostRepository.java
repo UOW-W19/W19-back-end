@@ -11,4 +11,7 @@ import java.util.UUID;
 @Repository
 public interface PostRepository extends JpaRepository<Post, UUID> {
     Page<Post> findByOriginalLanguage(String language, Pageable pageable);
+
+    long countByAuthorId(UUID authorId);
+
 }
