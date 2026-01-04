@@ -42,10 +42,6 @@ public class Profile extends BaseEntity {
     private Double latitude;
     private Double longitude;
 
-    @Embedded
-    @Builder.Default
-    private Streak streak = new Streak(0, 0);
-
     @OneToMany(mappedBy = "profile", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<UserLanguage> languages = new ArrayList<>();

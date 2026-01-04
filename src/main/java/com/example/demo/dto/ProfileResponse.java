@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import com.example.demo.entity.Streak;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,7 +21,7 @@ public class ProfileResponse {
     private String bio;
     private Double latitude;
     private Double longitude;
-    private Streak streak;
+
     private java.time.Instant createdAt;
     private List<UserLanguageDTO> languages;
     private List<String> roles;

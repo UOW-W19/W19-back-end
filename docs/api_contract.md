@@ -1,56 +1,62 @@
-# Spring Boot API Contract for Locale Frontend
+# Locale API Documentation
 
-Base URL: `http://localhost:8080/api`
+Complete REST API specification for the Locale language learning app.
 
-## Authentication
-
-All protected endpoints require: `Authorization: Bearer {jwt_token}`
+**Base URL:** `https://api.locale-app.com/v1`  
+**Authentication:** Bearer Token (JWT)  
+**Content-Type:** `application/json`
 
 ---
 
-## Phase 1: Core Endpoints (MVP)
+## Table of Contents
 
-### 1. Authentication
+1. [Authentication](#1-authentication)
+2. [Users & Profiles](#2-users--profiles)
+3. [Languages](#3-languages)
+4. [Posts & Content](#4-posts--content)
+5. [Learning](#5-learning)
+6. [Messaging](#6-messaging)
+7. [Community & Meetups](#7-community--meetups)
+8. [Moderation](#8-moderation)
+9. [Notifications](#9-notifications)
 
-#### Register
+---
+
+## 1. Authentication
+
+### Register
 ```http
-POST /api/auth/register
-Content-Type: application/json
+POST /auth/register
 ```
 
-**Request:**
+**Request Body:**
 ```json
 {
   "email": "user@example.com",
   "password": "securePassword123",
   "username": "johndoe",
-  "displayName": "John Doe"
+  "display_name": "John Doe"
 }
 ```
 
-**Response (201 Created):**
+**Response:** `201 Created`
 ```json
 {
-  "userId": "uuid-string",
-  "accessToken": "jwt_token_here",
-  "refreshToken": "refresh_token_here",
-  "expiresIn": 3600
+  "user_id": "uuid",
+  "access_token": "jwt_token",
+  "refresh_token": "refresh_token",
+  "expires_in": 3600
 }
 ```
-
-**Errors:**
-- `400` - Validation error (weak password, invalid email)
-- `409` - Email or username already exists
 
 ---
 
-#### Login
+### Login
 ```http
-POST /api/auth/login
-Content-Type: application/json
+POST /auth/login
 ```
 
-**Request:**
+**Request Body:**
 ```json
 {
   "email": "user@example.com",
@@ -58,228 +64,397 @@ Content-Type: application/json
 }
 ```
 
-**Response (200 OK):**
+**Response:** `200 OK`
 ```json
 {
-  "userId": "uuid-string",
-  "accessToken": "jwt_token_here",
-  "refreshToken": "refresh_token_here",
-  "expiresIn": 3600
-}
-```
-
-**Errors:**
-- `401` - Invalid credentials
-
----
-
-#### Refresh Token
-```http
-POST /api/auth/refresh
-Content-Type: application/json
-```
-
-**Request:**
-```json
-{
-  "refreshToken": "refresh_token_here"
-}
-```
-
-**Response (200 OK):**
-```json
-{
-  "accessToken": "new_jwt_token",
-  "refreshToken": "new_refresh_token",
-  "expiresIn": 3600
+  "user_id": "uuid",
+  "access_token": "jwt_token",
+  "refresh_token": "refresh_token",
+  "expires_in": 3600
 }
 ```
 
 ---
 
-#### Logout
+### Refresh Token
 ```http
-POST /api/auth/logout
+POST /auth/refresh
+```
+
+**Request Body:**
+```json
+{
+  "refresh_token": "refresh_token"
+}
+```
+
+---
+
+### Logout
+```http
+POST /auth/logout
 Authorization: Bearer {token}
 ```
 
-**Response:** `204 No Content`
-
 ---
 
-### 2. User Profile
+## 2. Users & Profiles
 
-#### Get Current User
+### Get Current User Profile
 ```http
-GET /api/users/me
+GET /users/me
 Authorization: Bearer {token}
 ```
 
-**Response (200 OK):**
+**Response:** `200 OK`
 ```json
 {
-  "id": "uuid-string",
-  "email": "user@example.com",
+  "id": "uuid",
   "username": "johndoe",
-  "displayName": "John Doe",
-  "avatarUrl": "https://...",
+  "display_name": "John Doe",
+  "avatar_url": "https://...",
   "bio": "Language enthusiast",
   "latitude": 40.7128,
   "longitude": -74.0060,
   "languages": [
     {
       "code": "en",
-      "name": "English",
-      "flagEmoji": "🇬🇧",
       "proficiency": "NATIVE",
-      "isLearning": false
+      "is_learning": false
     },
     {
       "code": "es",
-      "name": "Spanish",
-      "flagEmoji": "🇪🇸",
       "proficiency": "B2",
-      "isLearning": true
+      "is_learning": true
     }
   ],
   "streak": {
     "current": 15,
     "longest": 30
   },
-  "createdAt": "2024-01-15T10:30:00Z"
+  "trust_score": 95,
+  "created_at": "2024-01-15T10:30:00Z"
 }
 ```
 
 ---
 
-#### Update Profile
+### Get User Profile by ID
 ```http
-PATCH /api/users/me
+GET /users/{user_id}
 Authorization: Bearer {token}
-Content-Type: application/json
 ```
 
-**Request:**
+---
+
+### Update Profile
+```http
+PATCH /users/me
+Authorization: Bearer {token}
+```
+
+**Request Body:**
 ```json
 {
-  "displayName": "John D.",
+  "display_name": "John D.",
   "bio": "Updated bio",
-  "avatarUrl": "https://...",
+  "avatar_url": "https://...",
   "latitude": 40.7128,
   "longitude": -74.0060
 }
 ```
 
-**Response (200 OK):** Updated user object
+---
+
+### Update User Languages
+```http
+PUT /users/me/languages
+Authorization: Bearer {token}
+```
+
+**Request Body:**
+```json
+{
+  "languages": [
+    {
+      "language_code": "en",
+      "proficiency": "NATIVE",
+      "is_learning": false
+    },
+    {
+      "language_code": "ja",
+      "proficiency": "A2",
+      "is_learning": true
+    }
+  ]
+}
+```
 
 ---
 
-### 3. Posts
-
-#### Get Feed
+### Get User Settings
 ```http
-GET /api/posts?page=0&size=20&language=all
+GET /users/me/settings
+Authorization: Bearer {token}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "notification_prefs": {
+    "push_enabled": true,
+    "email_enabled": false,
+    "like_notifications": true,
+    "comment_notifications": true,
+    "meetup_notifications": true
+  },
+  "privacy_settings": {
+    "show_location": true,
+    "show_streak": true,
+    "allow_messages": "everyone"
+  },
+  "theme": "system"
+}
+```
+
+---
+
+### Update User Settings
+```http
+PATCH /users/me/settings
+Authorization: Bearer {token}
+```
+
+---
+
+### Follow User
+```http
+POST /users/{user_id}/follow
+Authorization: Bearer {token}
+```
+
+---
+
+### Unfollow User
+```http
+DELETE /users/{user_id}/follow
+Authorization: Bearer {token}
+```
+
+---
+
+### Get Followers
+```http
+GET /users/{user_id}/followers
 Authorization: Bearer {token}
 ```
 
 **Query Parameters:**
-- `page` - Page number (0-indexed)
-- `size` - Items per page (default: 20)
-- `language` - Filter by language code or "all"
-- `latitude` - User's latitude (for distance calc)
-- `longitude` - User's longitude (for distance calc)
+- `page` (default: 1)
+- `limit` (default: 20)
 
-**Response (200 OK):**
+---
+
+### Get Following
+```http
+GET /users/{user_id}/following
+Authorization: Bearer {token}
+```
+
+---
+
+### Block User
+```http
+POST /users/{user_id}/block
+Authorization: Bearer {token}
+```
+
+---
+
+### Unblock User
+```http
+DELETE /users/{user_id}/block
+Authorization: Bearer {token}
+```
+
+---
+
+## 3. Languages
+
+### Get All Languages
+```http
+GET /languages
+```
+
+**Response:** `200 OK`
 ```json
 {
-  "content": [
+  "languages": [
     {
-      "id": "uuid-string",
+      "code": "en",
+      "name": "English",
+      "native_name": "English",
+      "flag_emoji": "🇬🇧"
+    },
+    {
+      "code": "es",
+      "name": "Spanish",
+      "native_name": "Español",
+      "flag_emoji": "🇪🇸"
+    }
+  ]
+}
+```
+
+---
+
+## 4. Posts & Content
+
+### Get Feed (Distance-Sorted)
+```http
+GET /posts/feed
+Authorization: Bearer {token}
+```
+
+**Query Parameters:**
+- `latitude` (required): User's current latitude
+- `longitude` (required): User's current longitude
+- `radius_km` (default: 50): Search radius in kilometers
+- `language` (optional): Filter by language code
+- `page` (default: 1)
+- `limit` (default: 20)
+
+**Response:** `200 OK`
+```json
+{
+  "posts": [
+    {
+      "id": "uuid",
       "author": {
-        "id": "uuid-string",
-        "username": "maria_garcia",
-        "displayName": "María García",
-        "avatarUrl": "https://...",
-        "language": "Spanish",
-        "flagEmoji": "🇪🇸"
+        "id": "uuid",
+        "username": "maria_es",
+        "display_name": "Maria",
+        "avatar_url": "https://..."
       },
-      "content": "¡Hola! Hoy aprendí una palabra nueva...",
-      "translation": "Hello! Today I learned a new word...",
-      "originalLanguage": "es",
-      "imageUrl": "https://...",
+      "content": "¡Hola amigos! Hoy visité un café nuevo.",
+      "original_language": "es",
+      "translations": {
+        "en": "Hello friends! Today I visited a new café."
+      },
+      "image_url": "https://...",
       "latitude": 40.4168,
       "longitude": -3.7038,
-      "location": "Madrid, Spain",
-      "distance": "2.5 km",
-      "reactions": {
-        "likes": 24,
-        "comments": 5
+      "distance_km": 2.5,
+      "reactions_count": {
+        "LIKE": 15,
+        "LOVE": 3,
+        "HELPFUL": 8
       },
-      "userReaction": "LIKE",
-      "createdAt": "2024-01-20T14:30:00Z"
+      "user_reaction": "LIKE",
+      "comments_count": 5,
+      "created_at": "2024-01-20T14:30:00Z"
     }
   ],
-  "page": 0,
-  "size": 20,
-  "totalElements": 150,
-  "totalPages": 8,
-  "last": false
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 150,
+    "has_more": true
+  }
 }
 ```
 
 ---
 
-#### Create Post
+### Get Post by ID
 ```http
-POST /api/posts
+GET /posts/{post_id}
 Authorization: Bearer {token}
-Content-Type: application/json
 ```
 
-**Request:**
+---
+
+### Create Post
+```http
+POST /posts
+Authorization: Bearer {token}
+```
+
+**Request Body:**
 ```json
 {
-  "content": "¡Buenos días desde Madrid!",
-  "originalLanguage": "es",
-  "translation": "Good morning from Madrid!",
-  "imageUrl": "https://...",
-  "latitude": 40.4168,
-  "longitude": -3.7038
+  "content": "Learning Japanese in Tokyo!",
+  "original_language": "en",
+  "latitude": 35.6762,
+  "longitude": 139.6503,
+  "image_url": "https://..."
 }
 ```
 
-**Response (201 Created):** Created post object
+**Response:** `201 Created`
+```json
+{
+  "id": "uuid",
+  "status": "PENDING",
+  "message": "Post submitted for review"
+}
+```
 
 ---
 
-#### Get Single Post
+### Update Post
 ```http
-GET /api/posts/{postId}
+PATCH /posts/{post_id}
+Authorization: Bearer {token}
+```
+
+**Request Body:**
+```json
+{
+  "content": "Updated content"
+}
+```
+
+---
+
+### Delete Post
+```http
+DELETE /posts/{post_id}
 Authorization: Bearer {token}
 ```
 
 ---
 
-#### Delete Post
+### Get Post Translations
 ```http
-DELETE /api/posts/{postId}
+GET /posts/{post_id}/translations
 Authorization: Bearer {token}
 ```
-
-**Response:** `204 No Content`
 
 ---
 
-### 4. Reactions
-
-#### Like/React to Post
+### Request Translation
 ```http
-POST /api/posts/{postId}/reactions
+POST /posts/{post_id}/translations
 Authorization: Bearer {token}
-Content-Type: application/json
 ```
 
-**Request:**
+**Request Body:**
+```json
+{
+  "target_language": "ja"
+}
+```
+
+---
+
+### React to Post
+```http
+POST /posts/{post_id}/reactions
+Authorization: Bearer {token}
+```
+
+**Request Body:**
 ```json
 {
   "reaction": "LIKE"
@@ -288,105 +463,240 @@ Content-Type: application/json
 
 **Reaction Types:** `LIKE`, `LOVE`, `HELPFUL`, `FUNNY`
 
-**Response (200 OK):**
+---
+
+### Remove Reaction
+```http
+DELETE /posts/{post_id}/reactions/{reaction_type}
+Authorization: Bearer {token}
+```
+
+---
+
+### Get Post Comments
+```http
+GET /posts/{post_id}/comments
+Authorization: Bearer {token}
+```
+
+**Query Parameters:**
+- `page` (default: 1)
+- `limit` (default: 20)
+
+---
+
+### Add Comment
+```http
+POST /posts/{post_id}/comments
+Authorization: Bearer {token}
+```
+
+**Request Body:**
 ```json
 {
-  "likes": 25,
-  "comments": 5,
-  "userReaction": "LIKE"
+  "content": "Great post!",
+  "parent_comment_id": null
 }
 ```
 
 ---
 
-#### Remove Reaction
+### Delete Comment
 ```http
-DELETE /api/posts/{postId}/reactions
+DELETE /posts/{post_id}/comments/{comment_id}
 Authorization: Bearer {token}
 ```
 
 ---
 
-### 5. Comments
-
-#### Get Comments
+### Report Post
 ```http
-GET /api/posts/{postId}/comments?page=0&size=20
+POST /posts/{post_id}/reports
 Authorization: Bearer {token}
 ```
 
-**Response (200 OK):**
+**Request Body:**
 ```json
 {
-  "content": [
+  "reason": "SPAM",
+  "details": "This is promotional content"
+}
+```
+
+**Report Reasons:** `SPAM`, `HARASSMENT`, `INAPPROPRIATE`, `MISINFORMATION`, `OTHER`
+
+---
+
+### Report Comment
+```http
+POST /comments/{comment_id}/reports
+Authorization: Bearer {token}
+```
+
+---
+
+## 5. Learning
+
+### Saved Words
+
+#### Get Saved Words
+```http
+GET /words
+Authorization: Bearer {token}
+```
+
+**Query Parameters:**
+- `language` (optional): Filter by language
+- `source` (optional): Filter by source (`POST`, `AR_SCAN`, `MANUAL`, `CHAT`)
+- `sort` (default: `created_at`): `created_at`, `next_review`, `mastery_level`
+- `page` (default: 1)
+- `limit` (default: 50)
+
+**Response:** `200 OK`
+```json
+{
+  "words": [
     {
-      "id": "uuid-string",
-      "author": {
-        "id": "uuid-string",
-        "username": "john_doe",
-        "displayName": "John Doe",
-        "avatarUrl": "https://..."
-      },
-      "content": "Great post!",
-      "createdAt": "2024-01-20T15:00:00Z"
+      "id": "uuid",
+      "word": "おはよう",
+      "translation": "Good morning",
+      "language_code": "ja",
+      "source": "AR_SCAN",
+      "context": "Sign at Tokyo station",
+      "mastery_level": 3,
+      "next_review": "2024-01-22T10:00:00Z",
+      "created_at": "2024-01-15T08:30:00Z"
     }
   ],
-  "page": 0,
-  "size": 20,
-  "totalElements": 5
+  "total": 150
 }
 ```
 
 ---
 
-#### Add Comment
+#### Save Word
 ```http
-POST /api/posts/{postId}/comments
+POST /words
 Authorization: Bearer {token}
-Content-Type: application/json
 ```
 
-**Request:**
+**Request Body:**
 ```json
 {
-  "content": "This is really helpful, thanks!"
+  "word": "bonjour",
+  "translation": "hello",
+  "language_code": "fr",
+  "source": "MANUAL",
+  "source_id": null,
+  "context": "Common greeting"
 }
 ```
 
-**Response (201 Created):** Created comment object
-
 ---
 
-#### Delete Comment
+#### Update Word
 ```http
-DELETE /api/posts/{postId}/comments/{commentId}
+PATCH /words/{word_id}
 Authorization: Bearer {token}
 ```
 
 ---
 
-### 6. Languages (Public)
-
-#### Get All Languages
+#### Delete Word
 ```http
-GET /api/languages
+DELETE /words/{word_id}
+Authorization: Bearer {token}
 ```
 
-**Response (200 OK):**
+---
+
+### AR Scanning
+
+#### Submit AR Scan
+```http
+POST /scans
+Authorization: Bearer {token}
+Content-Type: multipart/form-data
+```
+
+**Form Data:**
+- `image`: Image file
+- `latitude`: Decimal
+- `longitude`: Decimal
+
+**Response:** `202 Accepted`
 ```json
 {
-  "languages": [
+  "scan_id": "uuid",
+  "status": "PENDING",
+  "message": "Image submitted for processing"
+}
+```
+
+---
+
+#### Get Scan Result
+```http
+GET /scans/{scan_id}
+Authorization: Bearer {token}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "id": "uuid",
+  "status": "PROCESSED",
+  "detected_text": "いらっしゃいませ",
+  "detected_language": "ja",
+  "translation": "Welcome",
+  "words": [
     {
-      "code": "en",
-      "name": "English",
-      "nativeName": "English",
-      "flagEmoji": "🇬🇧"
-    },
+      "word": "いらっしゃいませ",
+      "translation": "Welcome (formal)",
+      "saved": false
+    }
+  ],
+  "created_at": "2024-01-20T15:00:00Z"
+}
+```
+
+---
+
+#### Get User's Scans
+```http
+GET /scans
+Authorization: Bearer {token}
+```
+
+---
+
+### Practice
+
+#### Start Practice Session
+```http
+POST /practice/sessions
+Authorization: Bearer {token}
+```
+
+**Request Body:**
+```json
+{
+  "word_count": 10,
+  "language": "ja"
+}
+```
+
+**Response:** `201 Created`
+```json
+{
+  "session_id": "uuid",
+  "words": [
     {
-      "code": "es",
-      "name": "Spanish",
-      "nativeName": "Español",
-      "flagEmoji": "🇪🇸"
+      "id": "uuid",
+      "word": "おはよう",
+      "options": ["Good morning", "Good evening", "Goodbye", "Hello"],
+      "source": "AR_SCAN",
+      "context": "Sign at Tokyo station"
     }
   ]
 }
@@ -394,154 +704,1011 @@ GET /api/languages
 
 ---
 
-## Database Schema (PostgreSQL)
-
-Use the existing `docs/database-schema.sql` file in this repo for the complete schema.
-
-**Essential tables for MVP:**
-- `profiles` - User profiles
-- `user_roles` - User roles (user, moderator, admin)
-- `user_languages` - Languages user speaks/learns
-- `languages` - Reference table for all languages
-- `posts` - User posts
-- `post_translations` - Translations of posts
-- `post_reactions` - Likes/reactions on posts
-- `post_comments` - Comments on posts
-
----
-
-## Spring Boot Entity Examples
-
-### User/Profile Entity
-```java
-@Entity
-@Table(name = "profiles")
-public class Profile {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
-    
-    @Column(unique = true, nullable = false)
-    private String username;
-    
-    private String displayName;
-    private String avatarUrl;
-    private String bio;
-    private BigDecimal latitude;
-    private BigDecimal longitude;
-    
-    @CreationTimestamp
-    private Instant createdAt;
-    
-    @UpdateTimestamp
-    private Instant updatedAt;
-    
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<UserLanguage> languages;
-}
+#### Submit Practice Answer
+```http
+POST /practice/sessions/{session_id}/answers
+Authorization: Bearer {token}
 ```
 
-### Post Entity
-```java
-@Entity
-@Table(name = "posts")
-public class Post {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "author_id", nullable = false)
-    private Profile author;
-    
-    @Column(nullable = false)
-    private String content;
-    
-    private String originalLanguage;
-    private String imageUrl;
-    private BigDecimal latitude;
-    private BigDecimal longitude;
-    
-    @Enumerated(EnumType.STRING)
-    private PostStatus status = PostStatus.APPROVED;
-    
-    @CreationTimestamp
-    private Instant createdAt;
-    
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
-    private List<PostReaction> reactions;
-    
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
-    private List<PostComment> comments;
-}
-```
-
----
-
-## JWT Token Structure
-
-**Payload:**
+**Request Body:**
 ```json
 {
-  "sub": "user-uuid",
-  "email": "user@example.com",
-  "username": "johndoe",
-  "roles": ["user"],
-  "iat": 1705312200,
-  "exp": 1705315800
+  "word_id": "uuid",
+  "answer": "Good morning",
+  "response_time_ms": 2500
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "is_correct": true,
+  "correct_answer": "Good morning",
+  "new_mastery_level": 4
 }
 ```
 
 ---
 
-## Error Response Format
+#### End Practice Session
+```http
+POST /practice/sessions/{session_id}/end
+Authorization: Bearer {token}
+```
 
-All errors should follow this format:
+**Response:** `200 OK`
 ```json
 {
-  "timestamp": "2024-01-15T10:30:00Z",
-  "status": 400,
-  "error": "Bad Request",
+  "session_id": "uuid",
+  "words_practiced": 10,
+  "correct_count": 8,
+  "accuracy": 0.8
+}
+```
+
+---
+
+#### Get Practice History
+```http
+GET /practice/sessions
+Authorization: Bearer {token}
+```
+
+---
+
+### Goals
+
+#### Get User Goals
+```http
+GET /goals
+Authorization: Bearer {token}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "goals": [
+    {
+      "id": "uuid",
+      "goal": "WORDS_LEARNED",
+      "target": 100,
+      "progress": 67,
+      "deadline": "2024-02-01",
+      "completed": false
+    }
+  ]
+}
+```
+
+---
+
+#### Create Goal
+```http
+POST /goals
+Authorization: Bearer {token}
+```
+
+**Request Body:**
+```json
+{
+  "goal": "WORDS_LEARNED",
+  "target": 50,
+  "deadline": "2024-02-15"
+}
+```
+
+**Goal Types:** `WORDS_LEARNED`, `POSTS_READ`, `PRACTICE_MINS`
+
+---
+
+#### Update Goal
+```http
+PATCH /goals/{goal_id}
+Authorization: Bearer {token}
+```
+
+---
+
+#### Delete Goal
+```http
+DELETE /goals/{goal_id}
+Authorization: Bearer {token}
+```
+
+---
+
+---
+
+## 6. Messaging
+
+### Conversations
+
+#### Get Conversations
+```http
+GET /conversations
+Authorization: Bearer {token}
+```
+
+**Query Parameters:**
+- `type` (optional): `DIRECT`, `GROUP`
+- `archived` (default: false)
+
+**Response:** `200 OK`
+```json
+{
+  "conversations": [
+    {
+      "id": "uuid",
+      "type": "DIRECT",
+      "title": null,
+      "participants": [
+        {
+          "id": "uuid",
+          "username": "maria_es",
+          "display_name": "Maria",
+          "avatar_url": "https://..."
+        }
+      ],
+      "last_message": {
+        "content": "See you tomorrow!",
+        "sender_id": "uuid",
+        "created_at": "2024-01-20T18:30:00Z"
+      },
+      "unread_count": 2,
+      "is_muted": false,
+      "updated_at": "2024-01-20T18:30:00Z"
+    }
+  ]
+}
+```
+
+---
+
+#### Create Direct Conversation
+```http
+POST /conversations/direct
+Authorization: Bearer {token}
+```
+
+**Request Body:**
+```json
+{
+  "user_id": "uuid"
+}
+```
+
+---
+
+#### Create Group Conversation
+```http
+POST /conversations/group
+Authorization: Bearer {token}
+```
+
+**Request Body:**
+```json
+{
+  "title": "Tokyo Language Exchange",
+  "image_url": "https://...",
+  "member_ids": ["uuid1", "uuid2", "uuid3"]
+}
+```
+
+---
+
+#### Get Conversation Details
+```http
+GET /conversations/{conversation_id}
+Authorization: Bearer {token}
+```
+
+---
+
+#### Update Group Conversation
+```http
+PATCH /conversations/{conversation_id}
+Authorization: Bearer {token}
+```
+
+**Request Body:**
+```json
+{
+  "title": "New Group Name",
+  "image_url": "https://..."
+}
+```
+
+---
+
+#### Add Group Members
+```http
+POST /conversations/{conversation_id}/members
+Authorization: Bearer {token}
+```
+
+**Request Body:**
+```json
+{
+  "user_ids": ["uuid1", "uuid2"]
+}
+```
+
+---
+
+#### Remove Group Member
+```http
+DELETE /conversations/{conversation_id}/members/{user_id}
+Authorization: Bearer {token}
+```
+
+---
+
+#### Leave Conversation
+```http
+POST /conversations/{conversation_id}/leave
+Authorization: Bearer {token}
+```
+
+---
+
+#### Archive Conversation
+```http
+POST /conversations/{conversation_id}/archive
+Authorization: Bearer {token}
+```
+
+---
+
+#### Mute/Unmute Conversation
+```http
+POST /conversations/{conversation_id}/mute
+Authorization: Bearer {token}
+```
+
+**Request Body:**
+```json
+{
+  "muted": true
+}
+```
+
+---
+
+### Messages
+
+#### Get Messages
+```http
+GET /conversations/{conversation_id}/messages
+Authorization: Bearer {token}
+```
+
+**Query Parameters:**
+- `before` (optional): Cursor for pagination (message ID)
+- `limit` (default: 50)
+
+**Response:** `200 OK`
+```json
+{
+  "messages": [
+    {
+      "id": "uuid",
+      "sender": {
+        "id": "uuid",
+        "username": "johndoe",
+        "avatar_url": "https://..."
+      },
+      "content": "Hola! ¿Cómo estás?",
+      "type": "TEXT",
+      "translations": {
+        "en": "Hello! How are you?"
+      },
+      "reply_to": null,
+      "created_at": "2024-01-20T14:30:00Z"
+    }
+  ],
+  "has_more": true
+}
+```
+
+---
+
+#### Send Text Message
+```http
+POST /conversations/{conversation_id}/messages
+Authorization: Bearer {token}
+```
+
+**Request Body:**
+```json
+{
+  "content": "Hello!",
+  "type": "TEXT",
+  "reply_to_id": null
+}
+```
+
+---
+
+#### Send Voice Message
+```http
+POST /conversations/{conversation_id}/messages/voice
+Authorization: Bearer {token}
+Content-Type: multipart/form-data
+```
+
+**Form Data:**
+- `audio`: Audio file
+- `reply_to_id` (optional): UUID
+
+---
+
+#### Send Image Message
+```http
+POST /conversations/{conversation_id}/messages/image
+Authorization: Bearer {token}
+Content-Type: multipart/form-data
+```
+
+**Form Data:**
+- `image`: Image file
+- `caption` (optional): Text
+- `reply_to_id` (optional): UUID
+
+---
+
+#### Delete Message
+```http
+DELETE /conversations/{conversation_id}/messages/{message_id}
+Authorization: Bearer {token}
+```
+
+---
+
+#### Get Message Translation
+```http
+GET /messages/{message_id}/translations/{language_code}
+Authorization: Bearer {token}
+```
+
+---
+
+#### Mark Conversation as Read
+```http
+POST /conversations/{conversation_id}/read
+Authorization: Bearer {token}
+```
+
+---
+
+## 7. Community & Meetups
+
+### Get Nearby Meetups
+```http
+GET /meetups
+Authorization: Bearer {token}
+```
+
+**Query Parameters:**
+- `latitude` (required)
+- `longitude` (required)
+- `radius_km` (default: 25)
+- `language` (optional)
+- `status` (default: `PUBLISHED`)
+- `from_date` (optional)
+- `to_date` (optional)
+- `page` (default: 1)
+- `limit` (default: 20)
+
+**Response:** `200 OK`
+```json
+{
+  "meetups": [
+    {
+      "id": "uuid",
+      "organizer": {
+        "id": "uuid",
+        "username": "tanaka_jp",
+        "display_name": "Tanaka",
+        "avatar_url": "https://..."
+      },
+      "title": "Japanese Conversation Practice",
+      "description": "Casual meetup for Japanese learners",
+      "location_name": "Shibuya Cafe",
+      "latitude": 35.6595,
+      "longitude": 139.7004,
+      "distance_km": 1.2,
+      "scheduled_at": "2024-01-25T18:00:00Z",
+      "language": {
+        "code": "ja",
+        "name": "Japanese",
+        "flag_emoji": "🇯🇵"
+      },
+      "max_participants": 10,
+      "participants_count": 6,
+      "user_status": null,
+      "status": "PUBLISHED"
+    }
+  ]
+}
+```
+
+---
+
+### Get Meetup Details
+```http
+GET /meetups/{meetup_id}
+Authorization: Bearer {token}
+```
+
+---
+
+### Create Meetup
+```http
+POST /meetups
+Authorization: Bearer {token}
+```
+
+**Request Body:**
+```json
+{
+  "title": "Spanish Conversation Night",
+  "description": "Practice Spanish with native speakers",
+  "location_name": "Downtown Coffee Shop",
+  "latitude": 40.7128,
+  "longitude": -74.0060,
+  "scheduled_at": "2024-02-01T19:00:00Z",
+  "language_code": "es",
+  "max_participants": 8
+}
+```
+
+---
+
+### Update Meetup
+```http
+PATCH /meetups/{meetup_id}
+Authorization: Bearer {token}
+```
+
+---
+
+### Publish Meetup
+```http
+POST /meetups/{meetup_id}/publish
+Authorization: Bearer {token}
+```
+
+---
+
+### Cancel Meetup
+```http
+POST /meetups/{meetup_id}/cancel
+Authorization: Bearer {token}
+```
+
+---
+
+### Join Meetup
+```http
+POST /meetups/{meetup_id}/join
+Authorization: Bearer {token}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "status": "PENDING",
+  "message": "Join request submitted"
+}
+```
+
+---
+
+### Leave Meetup
+```http
+DELETE /meetups/{meetup_id}/join
+Authorization: Bearer {token}
+```
+
+---
+
+### Get Meetup Participants
+```http
+GET /meetups/{meetup_id}/participants
+Authorization: Bearer {token}
+```
+
+---
+
+### Update Participant Status (Organizer Only)
+```http
+PATCH /meetups/{meetup_id}/participants/{user_id}
+Authorization: Bearer {token}
+```
+
+**Request Body:**
+```json
+{
+  "status": "CONFIRMED"
+}
+```
+
+**Statuses:** `PENDING`, `CONFIRMED`, `DECLINED`, `ATTENDED`
+
+---
+
+### Get User's Meetups
+```http
+GET /users/me/meetups
+Authorization: Bearer {token}
+```
+
+**Query Parameters:**
+- `role` (optional): `organizer`, `participant`
+- `status` (optional): `upcoming`, `past`
+
+---
+
+## 8. Moderation
+
+*Requires `moderator` or `admin` role*
+
+### Get Pending Posts
+```http
+GET /moderation/posts
+Authorization: Bearer {token}
+```
+
+**Query Parameters:**
+- `status` (default: `PENDING`): `PENDING`, `FLAGGED`
+- `page` (default: 1)
+- `limit` (default: 20)
+
+---
+
+### Approve Post
+```http
+POST /moderation/posts/{post_id}/approve
+Authorization: Bearer {token}
+```
+
+---
+
+### Reject Post
+```http
+POST /moderation/posts/{post_id}/reject
+Authorization: Bearer {token}
+```
+
+**Request Body:**
+```json
+{
+  "reason": "Content violates community guidelines"
+}
+```
+
+---
+
+### Remove Post
+```http
+POST /moderation/posts/{post_id}/remove
+Authorization: Bearer {token}
+```
+
+**Request Body:**
+```json
+{
+  "reason": "Spam content",
+  "notify_user": true
+}
+```
+
+---
+
+### Get Reports
+```http
+GET /moderation/reports
+Authorization: Bearer {token}
+```
+
+**Query Parameters:**
+- `type` (optional): `post`, `comment`
+- `status` (default: `OPEN`)
+- `page` (default: 1)
+- `limit` (default: 20)
+
+---
+
+### Handle Report
+```http
+POST /moderation/reports/{report_id}/resolve
+Authorization: Bearer {token}
+```
+
+**Request Body:**
+```json
+{
+  "action": "REMOVE",
+  "notes": "Confirmed spam"
+}
+```
+
+---
+
+### Get Translation Flags
+```http
+GET /moderation/translations
+Authorization: Bearer {token}
+```
+
+---
+
+### Correct Translation
+```http
+POST /moderation/translations/{flag_id}/correct
+Authorization: Bearer {token}
+```
+
+**Request Body:**
+```json
+{
+  "corrected_text": "Corrected translation here"
+}
+```
+
+---
+
+### Dismiss Translation Flag
+```http
+POST /moderation/translations/{flag_id}/dismiss
+Authorization: Bearer {token}
+```
+
+---
+
+### Get Users
+```http
+GET /moderation/users
+Authorization: Bearer {token}
+```
+
+**Query Parameters:**
+- `search` (optional): Username search
+- `sanctioned` (optional): Filter sanctioned users
+- `page` (default: 1)
+- `limit` (default: 20)
+
+---
+
+### Warn User
+```http
+POST /moderation/users/{user_id}/warn
+Authorization: Bearer {token}
+```
+
+**Request Body:**
+```json
+{
+  "reason": "Inappropriate behavior"
+}
+```
+
+---
+
+### Mute User
+```http
+POST /moderation/users/{user_id}/mute
+Authorization: Bearer {token}
+```
+
+**Request Body:**
+```json
+{
+  "reason": "Spam posting",
+  "duration_hours": 24
+}
+```
+
+---
+
+### Suspend User
+```http
+POST /moderation/users/{user_id}/suspend
+Authorization: Bearer {token}
+```
+
+**Request Body:**
+```json
+{
+  "reason": "Repeated violations",
+  "duration_days": 7
+}
+```
+
+---
+
+### Ban User
+```http
+POST /moderation/users/{user_id}/ban
+Authorization: Bearer {token}
+```
+
+**Request Body:**
+```json
+{
+  "reason": "Severe policy violation",
+  "permanent": true
+}
+```
+
+---
+
+### Unban User
+```http
+POST /moderation/users/{user_id}/unban
+Authorization: Bearer {token}
+```
+
+---
+
+### Get Moderation Log
+```http
+GET /moderation/log
+Authorization: Bearer {token}
+```
+
+**Query Parameters:**
+- `actor_id` (optional)
+- `target_type` (optional)
+- `action` (optional)
+- `from_date` (optional)
+- `to_date` (optional)
+- `page` (default: 1)
+- `limit` (default: 50)
+
+---
+
+### Get Appeals
+```http
+GET /moderation/appeals
+Authorization: Bearer {token}
+```
+
+**Query Parameters:**
+- `status` (default: `PENDING`)
+
+---
+
+### Handle Appeal
+```http
+POST /moderation/appeals/{appeal_id}/resolve
+Authorization: Bearer {token}
+```
+
+**Request Body:**
+```json
+{
+  "decision": "APPROVED",
+  "notes": "Appeal accepted, sanction removed"
+}
+```
+
+---
+
+## 9. Notifications
+
+### Get Notifications
+```http
+GET /notifications
+Authorization: Bearer {token}
+```
+
+**Query Parameters:**
+- `unread_only` (default: false)
+- `type` (optional): `LIKE`, `COMMENT`, `FOLLOW`, `MENTION`, `MEETUP`, `MODERATION`, `SYSTEM`
+- `page` (default: 1)
+- `limit` (default: 30)
+
+**Response:** `200 OK`
+```json
+{
+  "notifications": [
+    {
+      "id": "uuid",
+      "type": "LIKE",
+      "title": "New reaction",
+      "body": "Maria liked your post",
+      "data": {
+        "post_id": "uuid",
+        "user_id": "uuid"
+      },
+      "read_at": null,
+      "created_at": "2024-01-20T15:30:00Z"
+    }
+  ],
+  "unread_count": 5
+}
+```
+
+---
+
+### Mark Notification as Read
+```http
+POST /notifications/{notification_id}/read
+Authorization: Bearer {token}
+```
+
+---
+
+### Mark All as Read
+```http
+POST /notifications/read-all
+Authorization: Bearer {token}
+```
+
+---
+
+### Get Unread Count
+```http
+GET /notifications/unread-count
+Authorization: Bearer {token}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "count": 5
+}
+```
+
+---
+
+## Error Responses
+
+All endpoints may return the following error responses:
+
+### 400 Bad Request
+```json
+{
+  "error": "BAD_REQUEST",
+  "message": "Invalid request body",
+  "details": {
+    "field": "email",
+    "issue": "Invalid email format"
+  }
+}
+```
+
+### 401 Unauthorized
+```json
+{
+  "error": "UNAUTHORIZED",
+  "message": "Invalid or expired token"
+}
+```
+
+### 403 Forbidden
+```json
+{
+  "error": "FORBIDDEN",
+  "message": "You don't have permission to perform this action"
+}
+```
+
+### 404 Not Found
+```json
+{
+  "error": "NOT_FOUND",
+  "message": "Resource not found"
+}
+```
+
+### 409 Conflict
+```json
+{
+  "error": "CONFLICT",
+  "message": "Resource already exists"
+}
+```
+
+### 422 Unprocessable Entity
+```json
+{
+  "error": "VALIDATION_ERROR",
   "message": "Validation failed",
-  "errors": [
+  "details": [
     {
-      "field": "email",
-      "message": "must be a valid email address"
+      "field": "username",
+      "issue": "Username already taken"
     }
   ]
 }
 ```
 
----
+### 429 Too Many Requests
+```json
+{
+  "error": "RATE_LIMITED",
+  "message": "Too many requests",
+  "retry_after": 60
+}
+```
 
-## CORS Configuration
-
-Your Spring Boot app needs to allow requests from the Lovable frontend:
-
-```java
-@Configuration
-public class CorsConfig implements WebMvcConfigurer {
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**")
-            .allowedOrigins(
-                "http://localhost:5173",  // Vite dev
-                "http://localhost:8080",
-                "https://*.lovableproject.com"  // Production
-            )
-            .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-            .allowedHeaders("*")
-            .allowCredentials(true);
-    }
+### 500 Internal Server Error
+```json
+{
+  "error": "INTERNAL_ERROR",
+  "message": "An unexpected error occurred"
 }
 ```
 
 ---
 
-## Next Steps
+## WebSocket Events
 
-1. Implement the auth endpoints first (register, login, refresh)
-2. Add the user profile endpoints
-3. Implement posts CRUD
-4. Add reactions and comments
-5. Let me know your API URL and I'll connect the frontend!
+### Connection
+```
+wss://api.locale-app.com/ws?token={jwt_token}
+```
+
+### Events
+
+#### New Message
+```json
+{
+  "event": "message.new",
+  "data": {
+    "conversation_id": "uuid",
+    "message": { ... }
+  }
+}
+```
+
+#### Message Deleted
+```json
+{
+  "event": "message.deleted",
+  "data": {
+    "conversation_id": "uuid",
+    "message_id": "uuid"
+  }
+}
+```
+
+#### Typing Indicator
+```json
+{
+  "event": "typing.start",
+  "data": {
+    "conversation_id": "uuid",
+    "user_id": "uuid"
+  }
+}
+```
+
+#### New Notification
+```json
+{
+  "event": "notification.new",
+  "data": {
+    "notification": { ... }
+  }
+}
+```
+
+---
+
+## Rate Limits
+
+| Endpoint Category | Limit |
+|-------------------|-------|
+| Authentication | 10 req/min |
+| Posts (read) | 100 req/min |
+| Posts (write) | 20 req/min |
+| Messages | 60 req/min |
+| AR Scans | 10 req/min |
+| General | 200 req/min |
+
+---
+
+*Last updated: December 2024*

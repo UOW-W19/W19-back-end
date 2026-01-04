@@ -111,7 +111,7 @@ public class AuthService {
                                 .bio(profile.getBio())
                                 .latitude(profile.getLatitude())
                                 .longitude(profile.getLongitude())
-                                .streak(profile.getStreak())
+
                                 .createdAt(profile.getCreatedAt() != null ? profile.getCreatedAt()
                                                 .atZone(java.time.ZoneId.systemDefault()).toInstant() : null)
                                 .languages(profile.getLanguages().stream()
