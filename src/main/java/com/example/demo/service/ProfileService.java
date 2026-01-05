@@ -25,7 +25,7 @@ public class ProfileService {
                                 .collect(Collectors.toList());
         }
 
-        private ProfileResponse mapToResponse(Profile profile) {
+        public ProfileResponse mapToResponse(Profile profile) {
                 return ProfileResponse.builder()
                                 .id(profile.getId())
                                 .username(profile.getUsername())

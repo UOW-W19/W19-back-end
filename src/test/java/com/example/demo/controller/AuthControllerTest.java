@@ -52,8 +52,8 @@ public class AuthControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isCreated())
-                                .andExpect(jsonPath("$.userId").exists())
-                                .andExpect(jsonPath("$.accessToken").exists());
+                                .andExpect(jsonPath("$.user_id").exists())
+                                .andExpect(jsonPath("$.access_token").exists());
         }
 
         @Test
@@ -67,7 +67,7 @@ public class AuthControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isCreated())
-                                .andExpect(jsonPath("$.userId").exists());
+                                .andExpect(jsonPath("$.user_id").exists());
 
                 // Verify username was generated from email prefix
                 com.example.demo.entity.Profile profile = profileRepository

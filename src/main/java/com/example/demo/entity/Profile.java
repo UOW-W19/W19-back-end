@@ -53,6 +53,9 @@ public class Profile extends BaseEntity {
     @OneToOne(mappedBy = "profile", cascade = CascadeType.ALL, orphanRemoval = true)
     private RefreshToken refreshToken;
 
+    @OneToOne(mappedBy = "profile", cascade = CascadeType.ALL, orphanRemoval = true)
+    private UserSettings settings;
+
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Post> posts = new ArrayList<>();
