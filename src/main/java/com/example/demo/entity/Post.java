@@ -34,8 +34,9 @@ public class Post extends BaseEntity {
     private Double longitude;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     @Builder.Default
-    private PostStatus status = PostStatus.APPROVED;
+    private PostStatus status = PostStatus.ACTIVE;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
