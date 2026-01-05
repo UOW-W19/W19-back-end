@@ -1,5 +1,7 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.ProfileResponse;
+import com.example.demo.dto.UpdateProfileRequest;
 import com.example.demo.dto.UserSettingsDTO;
 import com.example.demo.service.UserService;
 import com.example.demo.entity.Profile;
@@ -8,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/users")
@@ -19,10 +23,44 @@ public class UserController {
         private final com.example.demo.service.ProfileService profileService;
 
         @GetMapping("/me")
-        public ResponseEntity<com.example.demo.dto.ProfileResponse> getCurrentUser(Authentication authentication) {
+        public ResponseEntity<ProfileResponse> getCurrentUser(Authentication authentication) {
                 Profile profile = profileRepository.findByEmail(authentication.getName())
                                 .orElseThrow(() -> new RuntimeException("User not found"));
                 return ResponseEntity.ok(profileService.mapToResponse(profile));
+        }
+
+        @GetMapping("/{userId}")
+        public ResponseEntity<ProfileResponse> getPublicProfile(@PathVariable UUID userId) {
+                Profile profile = profileRepository.findById(userId)
+                                .orElseThrow(() -> new RuntimeException("User not found"));
+                return ResponseEntity.ok(profileService.mapToResponse(profile));
+        }
+
+        @PatchMapping("/me")
+        public ResponseEntity<ProfileResponse> updateProfile(
+                        Authentication authentication,
+                        @RequestBody UpdateProfileRequest request) {
+                Profile profile = profileRepository.findByEmail(authentication.getName())
+                                .orElseThrow(() -> new RuntimeException("User not found"));
+
+                if (request.getDisplayName() != null) {
+                        profile.setDisplayName(request.getDisplayName());
+                }
+                if (request.getBio() != null) {
+                        profile.setBio(request.getBio());
+                }
+                if (request.getAvatarUrl() != null) {
+                        profile.setAvatarUrl(request.getAvatarUrl());
+                }
+                if (request.getLatitude() != null) {
+                        profile.setLatitude(request.getLatitude());
+                }
+                if (request.getLongitude() != null) {
+                        profile.setLongitude(request.getLongitude());
+                }
+
+                Profile updated = profileRepository.save(profile);
+                return ResponseEntity.ok(profileService.mapToResponse(updated));
         }
 
         @GetMapping("/me/settings")

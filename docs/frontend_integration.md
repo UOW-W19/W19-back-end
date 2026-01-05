@@ -11,12 +11,12 @@
 ## Table of Contents
 
 1. [Authentication](#1-authentication) - 4 endpoints ✅
-2. [Users & Profiles](#2-users--profiles) - 5 endpoints ⚠️
-3. [Languages](#3-languages) - 2 endpoints ⚠️
+2. [Users & Profiles](#2-users--profiles) - 13 endpoints ✅
+3. [Languages](#3-languages) - 2 endpoints ✅
 4. [Posts & Content](#4-posts--content) - 9 endpoints ⚠️
 5. [Social Features](#5-social-features) - 2 endpoints ✅
 
-**Total Implemented:** 22 endpoints
+**Total Implemented:** 30 endpoints
 
 ---
 
@@ -182,6 +182,146 @@ interface UserLanguage {
 const getCurrentUser = async () => {
   const token = localStorage.getItem('access_token');
   const response = await fetch('http://localhost:8081/api/users/me', {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  return await response.json();
+};
+```
+
+---
+
+### Get Public Profile
+**Endpoint:** `GET /users/{userId}`  
+**Auth:** Required
+
+**Response:** Same as `ProfileResponse` above
+
+**Example:**
+```typescript
+const getUserProfile = async (userId: string) => {
+  const token = localStorage.getItem('access_token');
+  const response = await fetch(`http://localhost:8081/api/users/${userId}`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  return await response.json();
+};
+```
+
+---
+
+### Update Profile
+**Endpoint:** `PATCH /users/me`  
+**Auth:** Required
+
+**Request:** (partial updates supported)
+```typescript
+interface UpdateProfileRequest {
+  display_name?: string;
+  bio?: string;
+  avatar_url?: string;
+  latitude?: number;
+  longitude?: number;
+}
+```
+
+**Response:** Updated `ProfileResponse`
+
+**Example:**
+```typescript
+const updateProfile = async (updates: UpdateProfileRequest) => {
+  const token = localStorage.getItem('access_token');
+  const response = await fetch('http://localhost:8081/api/users/me', {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(updates)
+  });
+  return await response.json();
+};
+```
+
+---
+
+### Get Followers
+**Endpoint:** `GET /users/{userId}/followers`  
+**Auth:** Required
+
+**Query Parameters:**
+- `page` (default: 0)
+- `size` (default: 20)
+
+**Response:**
+```typescript
+interface PagedProfileResponse {
+  content: ProfileResponse[];
+  pageable: {...};
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+}
+```
+
+**Example:**
+```typescript
+const getFollowers = async (userId: string, page = 0) => {
+  const token = localStorage.getItem('access_token');
+  const response = await fetch(
+    `http://localhost:8081/api/users/${userId}/followers?page=${page}&size=20`,
+    { headers: { 'Authorization': `Bearer ${token}` } }
+  );
+  return await response.json();
+};
+```
+
+---
+
+### Get Following
+**Endpoint:** `GET /users/{userId}/following`  
+**Auth:** Required
+
+**Query Parameters:**
+- `page` (default: 0)
+- `size` (default: 20)
+
+**Response:** Same as `PagedProfileResponse` above
+
+**Example:**
+```typescript
+const getFollowing = async (userId: string, page = 0) => {
+  const token = localStorage.getItem('access_token');
+  const response = await fetch(
+    `http://localhost:8081/api/users/${userId}/following?page=${page}&size=20`,
+    { headers: { 'Authorization': `Bearer ${token}` } }
+  );
+  return await response.json();
+};
+```
+
+---
+
+### Get User Languages
+**Endpoint:** `GET /users/me/languages`  
+**Auth:** Required
+
+**Response:**
+```typescript
+type UserLanguage[] = Array<{
+  code: string;
+  name: string;
+  flag_emoji: string;
+  proficiency: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'NATIVE';
+  is_learning: boolean;
+}>;
+```
+
+**Example:**
+```typescript
+const getUserLanguages = async () => {
+  const token = localStorage.getItem('access_token');
+  const response = await fetch('http://localhost:8081/api/users/me/languages', {
     headers: { 'Authorization': `Bearer ${token}` }
   });
   return await response.json();
