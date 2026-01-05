@@ -57,8 +57,8 @@ public class AuthControllerLoginTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userId").exists())
-                .andExpect(jsonPath("$.accessToken").exists());
+                .andExpect(jsonPath("$.user_id").exists())
+                .andExpect(jsonPath("$.access_token").exists());
     }
 
     @Test

@@ -21,6 +21,9 @@ import java.util.UUID;
 public class PostController {
 
     private final PostService postService;
+    private final com.example.demo.service.TranslationService translationService;
+    private final com.example.demo.service.ReportService reportService;
+    private final com.example.demo.repository.ProfileRepository profileRepository;
 
     @GetMapping
     public ResponseEntity<Page<PostResponse>> getFeed(
@@ -57,5 +60,26 @@ public class PostController {
             Authentication authentication) {
         postService.deletePost(postId, authentication.getName());
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{postId}/translations")
+    public ResponseEntity<com.example.demo.dto.PostTranslationResponse> translatePost(
+            @PathVariable UUID postId,
+            @RequestBody java.util.Map<String, String> body) {
+        String language = body.get("targetLanguage");
+        return ResponseEntity.ok(translationService.getTranslation(postId, language));
+    }
+
+    @PostMapping("/{postId}/reports")
+    public ResponseEntity<Void> reportPost(
+            Authentication authentication,
+            @PathVariable UUID postId,
+            @RequestBody com.example.demo.dto.ReportRequest request) {
+        com.example.demo.entity.Profile reporter = profileRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        request.setPostId(postId);
+        reportService.createReport(reporter.getId(), request);
+        return ResponseEntity.ok().build();
     }
 }
