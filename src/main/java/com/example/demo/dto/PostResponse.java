@@ -1,7 +1,12 @@
 package com.example.demo.dto;
 
-import lombok.*;
-import java.time.Instant;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -10,29 +15,47 @@ import java.util.UUID;
 @AllArgsConstructor
 public class PostResponse {
     private UUID id;
-    private AuthorDto author;
     private String content;
-    private String translation; // Placeholder for future use
+
+    @JsonProperty("original_language")
     private String originalLanguage;
+
+    @JsonProperty("image_url")
     private String imageUrl;
+
     private Double latitude;
     private Double longitude;
-    private String location; // Human readable location
-    private String distance; // Calculated distance
-    private PostReactionsSummary reactions;
+    private String location;
+    private String distance;
+
+    @JsonProperty("created_at")
+    private LocalDateTime createdAt;
+
+    private String status;
+
+    private AuthorDTO author;
+    private ReactionSummaryDTO reactions;
+
+    @JsonProperty("user_reaction")
     private String userReaction;
-    private Instant createdAt;
 
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class AuthorDto {
+    public static class AuthorDTO {
         private UUID id;
         private String username;
+
+        @JsonProperty("display_name")
         private String displayName;
+
+        @JsonProperty("avatar_url")
         private String avatarUrl;
+
         private String language;
+
+        @JsonProperty("flag_emoji")
         private String flagEmoji;
     }
 
@@ -40,8 +63,8 @@ public class PostResponse {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class PostReactionsSummary {
-        private long likes;
-        private long comments;
+    public static class ReactionSummaryDTO {
+        private int likes;
+        private int comments;
     }
 }

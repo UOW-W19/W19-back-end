@@ -1,7 +1,8 @@
 package com.example.demo.enums;
 
 public enum PostStatus {
-    PENDING,
-    APPROVED,
-    REJECTED
+    ACTIVE,
+    PENDING_REVIEW,
+    HIDDEN,
+    REMOVED
 }
