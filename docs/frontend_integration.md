@@ -1,22 +1,24 @@
 # Frontend Integration Guide - Current Implementation
 
-**Last Updated:** 2026-01-05  
+**Last Updated:** 2026-01-10  
 **Base URL:** `http://localhost:8081/api`  
 **Auth:** Bearer Token (JWT)
 
-> **IMPORTANT:** All JSON responses now use `snake_case` field names to match the API contract.
+> **IMPORTANT:** All JSON responses now use `snake_case` field names to match the API contract.  
+> **RECENT UPDATES:** Added Learning Core with 10 new endpoints (saved words, practice sessions, learning stats).
 
 ---
 
 ## Table of Contents
 
 1. [Authentication](#1-authentication) - 4 endpoints ✅
-2. [Users & Profiles](#2-users--profiles) - 5 endpoints ⚠️
-3. [Languages](#3-languages) - 2 endpoints ⚠️
-4. [Posts & Content](#4-posts--content) - 9 endpoints ⚠️
+2. [Users & Profiles](#2-users--profiles) - 5 endpoints ✅
+3. [Languages](#3-languages) - 2 endpoints ✅
+4. [Posts & Content](#4-posts--content) - 9 endpoints ✅
 5. [Social Features](#5-social-features) - 2 endpoints ✅
+6. [Learning Core](#6-learning-core) - 10 endpoints ✅
 
-**Total Implemented:** 22 endpoints
+**Total Implemented:** 40 endpoints
 
 ---
 
@@ -322,6 +324,7 @@ interface PostResponse {
   longitude: number | null;
   location: string; // "Nearby" or "Unknown"
   distance: string; // "5.2 km" or "Unknown"
+  status: 'ACTIVE' | 'PENDING_REVIEW' | 'HIDDEN' | 'REMOVED'; // NEW
   created_at: string;
   author: {
     id: string;
@@ -414,12 +417,14 @@ interface CreatePostRequest {
 **Request:**
 ```typescript
 {
-  reason: 'SPAM' | 'HARASSMENT' | 'HATE_SPEECH' | 'INAPPROPRIATE_CONTENT' | 'OTHER';
+  reason: 'SPAM' | 'HARASSMENT' | 'INAPPROPRIATE_CONTENT' | 'MISINFORMATION' | 'OTHER';
   description?: string;
 }
 ```
 
-**Response:** `200 OK`
+**Response:** `201 Created`
+
+> **Note:** ReportReason enum updated to match API contract.
 
 ---
 

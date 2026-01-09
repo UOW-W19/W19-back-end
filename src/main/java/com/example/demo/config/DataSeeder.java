@@ -9,9 +9,12 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
 
 import com.example.demo.entity.Language;
+import com.example.demo.entity.Post;
 import com.example.demo.entity.Profile;
 import com.example.demo.entity.UserLanguage;
+import com.example.demo.enums.PostStatus;
 import com.example.demo.repository.LanguageRepository;
+import com.example.demo.repository.PostRepository;
 import com.example.demo.repository.UserLanguageRepository;
 import java.util.List;
 import java.util.UUID;
@@ -25,6 +28,7 @@ public class DataSeeder implements CommandLineRunner {
     private final ProfileRepository profileRepository;
     private final LanguageRepository languageRepository;
     private final UserLanguageRepository userLanguageRepository;
+    private final PostRepository postRepository;
 
     @Override
     public void run(String... args) {
@@ -64,6 +68,50 @@ public class DataSeeder implements CommandLineRunner {
                     .build());
 
             log.info("Demo data seeded successfully! You can now login with demo@locale.app / demo123");
+        }
+
+        // Seed posts if there are none (separate check so posts get created even if
+        // users exist)
+        if (postRepository.count() == 0) {
+            log.info("Seeding sample posts...");
+
+            Profile demoProfile = profileRepository.findByEmail("demo@locale.app").orElse(null);
+            if (demoProfile == null) {
+                log.warn("Demo user not found, skipping post seeding");
+                return;
+            }
+
+            // Seed some sample posts
+            Post post1 = Post.builder()
+                    .author(demoProfile)
+                    .content("Hello world! This is my first post on Locale 🌍")
+                    .originalLanguage("en")
+                    .status(PostStatus.ACTIVE)
+                    .latitude(-33.8688)
+                    .longitude(151.2093)
+                    .build();
+
+            Post post2 = Post.builder()
+                    .author(demoProfile)
+                    .content("¡Hola! Estoy aprendiendo español. ¿Alguien quiere practicar conmigo?")
+                    .originalLanguage("es")
+                    .status(PostStatus.ACTIVE)
+                    .latitude(-33.8688)
+                    .longitude(151.2093)
+                    .build();
+
+            Post post3 = Post.builder()
+                    .author(demoProfile)
+                    .content("Looking for language exchange partners in Sydney! Coffee anyone? ☕")
+                    .originalLanguage("en")
+                    .status(PostStatus.ACTIVE)
+                    .latitude(-33.8688)
+                    .longitude(151.2093)
+                    .build();
+
+            postRepository.saveAll(List.of(post1, post2, post3));
+
+            log.info("Created {} sample posts", 3);
         }
     }
 }
