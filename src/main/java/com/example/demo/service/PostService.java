@@ -5,18 +5,20 @@ import com.example.demo.dto.PostResponse;
 import com.example.demo.entity.Post;
 import com.example.demo.entity.Profile;
 import com.example.demo.entity.Language;
+import com.example.demo.entity.UserLanguage;
 import com.example.demo.repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.ZoneId;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PostService {
 
         private final PostRepository postRepository;
@@ -31,14 +33,37 @@ public class PostService {
                 Profile currentUser = profileRepository.findByEmail(currentUserEmail)
                                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+                // TEMPORARY: Show all posts for debugging
+                // TODO: Re-enable status filtering after fixing post statuses in database
+                /*
+                 * java.util.List<com.example.demo.enums.PostStatus> visibleStatuses =
+                 * java.util.Arrays.asList(
+                 * com.example.demo.enums.PostStatus.ACTIVE,
+                 * com.example.demo.enums.PostStatus.APPROVED
+                 * );
+                 */
+
                 Page<Post> posts;
                 if (language != null && !language.equalsIgnoreCase("all")) {
                         posts = postRepository.findByOriginalLanguage(language, pageable);
+                        // posts = postRepository.findByOriginalLanguageAndStatusIn(language,
+                        // visibleStatuses, pageable);
                 } else {
                         posts = postRepository.findAll(pageable);
+                        // posts = postRepository.findByStatusIn(visibleStatuses, pageable);
                 }
 
-                return posts.map(post -> mapToResponse(post, currentUser, lat, lon));
+                log.info("DEBUG: Found {} posts in database for user {}", posts.getTotalElements(), currentUserEmail);
+                log.info("DEBUG: Language filter: {}", language);
+
+                try {
+                        Page<PostResponse> response = posts.map(post -> mapToResponse(post, currentUser, lat, lon));
+                        log.info("DEBUG: Successfully mapped {} posts", response.getNumberOfElements());
+                        return response;
+                } catch (Exception e) {
+                        log.error("DEBUG: Error mapping posts to response", e);
+                        throw e;
+                }
         }
 
         @Transactional
@@ -93,19 +118,38 @@ public class PostService {
                                 .map(reaction -> reaction.getType().name())
                                 .orElse(null);
 
-                Language langInfo = post.getOriginalLanguage() != null
-                                ? languageRepository.findById(post.getOriginalLanguage()).orElse(null)
-                                : null;
+                // Get author's native language for display
+                Profile author = post.getAuthor();
+                String authorLanguageName = "Unknown";
+                String authorFlagEmoji = "🌍";
+
+                // Try to get the author's native language from their UserLanguage settings
+                if (author.getLanguages() != null && !author.getLanguages().isEmpty()) {
+                        // Find the native language (isLearning = false means it's a native language)
+                        UserLanguage nativeLanguage = author.getLanguages().stream()
+                                        .filter(ul -> !ul.isLearning())
+                                        .findFirst()
+                                        .orElse(author.getLanguages().get(0));
+
+                        if (nativeLanguage != null && nativeLanguage.getLanguage() != null) {
+                                Language lang = nativeLanguage.getLanguage();
+                                authorLanguageName = lang.getName() != null ? lang.getName() : "Unknown";
+                                authorFlagEmoji = lang.getFlagEmoji() != null ? lang.getFlagEmoji() : "🌍";
+                        }
+                }
 
                 return PostResponse.builder()
                                 .id(post.getId())
                                 .author(PostResponse.AuthorDTO.builder()
-                                                .id(post.getAuthor().getId())
-                                                .username(post.getAuthor().getUsername())
-                                                .displayName(post.getAuthor().getDisplayName())
-                                                .avatarUrl(post.getAuthor().getAvatarUrl())
-                                                .language(langInfo != null ? langInfo.getName() : "Unknown")
-                                                .flagEmoji(langInfo != null ? langInfo.getFlagEmoji() : "🌍")
+                                                .id(author.getId())
+                                                .username(author.getUsername() != null ? author.getUsername()
+                                                                : "user_" + author.getId().toString().substring(0, 8))
+                                                .displayName(author.getDisplayName() != null ? author.getDisplayName()
+                                                                : (author.getUsername() != null ? author.getUsername()
+                                                                                : "Anonymous"))
+                                                .avatarUrl(author.getAvatarUrl())
+                                                .language(authorLanguageName)
+                                                .flagEmoji(authorFlagEmoji)
                                                 .build())
                                 .content(post.getContent())
                                 .originalLanguage(post.getOriginalLanguage())
