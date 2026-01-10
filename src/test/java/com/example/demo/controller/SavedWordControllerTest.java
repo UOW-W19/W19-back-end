@@ -43,12 +43,49 @@ public class SavedWordControllerTest {
     @Autowired
     private LanguageRepository languageRepository;
 
+    @Autowired
+    private com.example.demo.repository.ContentReportRepository contentReportRepository;
+    @Autowired
+    private com.example.demo.repository.PostTranslationRepository postTranslationRepository;
+    @Autowired
+    private com.example.demo.repository.PostReactionRepository postReactionRepository;
+    @Autowired
+    private com.example.demo.repository.PostCommentRepository postCommentRepository;
+    @Autowired
+    private com.example.demo.repository.PostRepository postRepository;
+    @Autowired
+    private com.example.demo.repository.PracticeResultRepository practiceResultRepository;
+    @Autowired
+    private com.example.demo.repository.PracticeSessionRepository practiceSessionRepository;
+    @Autowired
+    private com.example.demo.repository.UserLanguageRepository userLanguageRepository;
+    @Autowired
+    private com.example.demo.repository.UserSettingsRepository userSettingsRepository;
+    @Autowired
+    private com.example.demo.repository.UserBlockRepository userBlockRepository;
+    @Autowired
+    private com.example.demo.repository.FollowRepository followRepository;
+    @Autowired
+    private com.example.demo.repository.RefreshTokenRepository refreshTokenRepository;
+
     private Profile testUser;
     private Language japanese;
 
     @BeforeEach
     void setUp() {
+        contentReportRepository.deleteAll();
+        postTranslationRepository.deleteAll();
+        postReactionRepository.deleteAll();
+        postCommentRepository.deleteAll();
+        postRepository.deleteAll();
+        practiceResultRepository.deleteAll();
+        practiceSessionRepository.deleteAll();
         savedWordRepository.deleteAll();
+        userLanguageRepository.deleteAll();
+        userSettingsRepository.deleteAll();
+        userBlockRepository.deleteAll();
+        followRepository.deleteAll();
+        refreshTokenRepository.deleteAll();
         profileRepository.deleteAll();
         languageRepository.deleteAll();
 

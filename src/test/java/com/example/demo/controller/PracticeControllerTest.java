@@ -25,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@org.springframework.test.annotation.DirtiesContext(classMode = org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class PracticeControllerTest {
 
         @Autowired
@@ -48,14 +49,45 @@ public class PracticeControllerTest {
         @Autowired
         private LanguageRepository languageRepository;
 
+        @Autowired
+        private com.example.demo.repository.ContentReportRepository contentReportRepository;
+        @Autowired
+        private com.example.demo.repository.PostTranslationRepository postTranslationRepository;
+        @Autowired
+        private com.example.demo.repository.PostReactionRepository postReactionRepository;
+        @Autowired
+        private com.example.demo.repository.PostCommentRepository postCommentRepository;
+        @Autowired
+        private com.example.demo.repository.PostRepository postRepository;
+        @Autowired
+        private com.example.demo.repository.UserLanguageRepository userLanguageRepository;
+        @Autowired
+        private com.example.demo.repository.UserSettingsRepository userSettingsRepository;
+        @Autowired
+        private com.example.demo.repository.UserBlockRepository userBlockRepository;
+        @Autowired
+        private com.example.demo.repository.FollowRepository followRepository;
+        @Autowired
+        private com.example.demo.repository.RefreshTokenRepository refreshTokenRepository;
+
         private Profile testUser;
         private Language japanese;
 
         @BeforeEach
         void setUp() {
+                contentReportRepository.deleteAll();
+                postTranslationRepository.deleteAll();
+                postReactionRepository.deleteAll();
+                postCommentRepository.deleteAll();
+                postRepository.deleteAll();
                 practiceResultRepository.deleteAll();
                 practiceSessionRepository.deleteAll();
                 savedWordRepository.deleteAll();
+                userLanguageRepository.deleteAll();
+                userSettingsRepository.deleteAll();
+                userBlockRepository.deleteAll();
+                followRepository.deleteAll();
+                refreshTokenRepository.deleteAll();
                 profileRepository.deleteAll();
                 languageRepository.deleteAll();
 
