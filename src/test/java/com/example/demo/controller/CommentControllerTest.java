@@ -151,7 +151,7 @@ public class CommentControllerTest {
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isCreated())
                                 .andExpect(jsonPath("$.content").value("This is a test comment"))
-                                .andExpect(jsonPath("$.author.displayName").value("Test User"));
+                                .andExpect(jsonPath("$.author.display_name").value("Test User"));
         }
 
         @Test

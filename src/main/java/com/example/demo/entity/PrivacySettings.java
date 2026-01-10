@@ -13,8 +13,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PrivacySettings {
     @Builder.Default
+    @com.fasterxml.jackson.annotation.JsonProperty("show_location")
     private boolean showLocation = true;
 
     @Builder.Default
+    @com.fasterxml.jackson.annotation.JsonProperty("allow_messages")
     private String allowMessages = "everyone"; // everyone, following, none
 }

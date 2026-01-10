@@ -32,6 +32,6 @@ public class CreateWordRequest {
     @JsonProperty("source_id")
     private UUID sourceId;
 
-    @JsonProperty("source_context")
+    @JsonProperty("context")
     private String sourceContext;
 }

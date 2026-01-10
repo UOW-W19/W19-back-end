@@ -7,6 +7,6 @@ import lombok.Data;
 public class UpdateWordRequest {
     private String translation;
 
-    @JsonProperty("source_context")
+    @JsonProperty("context")
     private String sourceContext;
 }

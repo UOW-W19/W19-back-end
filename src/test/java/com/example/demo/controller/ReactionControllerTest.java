@@ -116,7 +116,7 @@ public class ReactionControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.userReaction").value("LIKE"))
+                                .andExpect(jsonPath("$.user_reaction").value("LIKE"))
                                 .andExpect(jsonPath("$.likes").value(1))
                                 .andExpect(jsonPath("$.comments").value(0));
         }
@@ -143,7 +143,7 @@ public class ReactionControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.userReaction").value("LOVE"))
+                                .andExpect(jsonPath("$.user_reaction").value("LOVE"))
                                 .andExpect(jsonPath("$.likes").value(1));
         }
 
