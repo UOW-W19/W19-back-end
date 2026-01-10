@@ -14,61 +14,61 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/practice")
+@RequestMapping("/api/learn")
 @RequiredArgsConstructor
 public class PracticeController {
 
-    private final PracticeService practiceService;
+        private final PracticeService practiceService;
 
-    @PostMapping("/sessions")
-    public ResponseEntity<StartSessionResponse> startSession(
-            Authentication authentication,
-            @Valid @RequestBody StartSessionRequest request) {
+        @PostMapping("/sessions/start")
+        public ResponseEntity<StartSessionResponse> startSession(
+                        Authentication authentication,
+                        @Valid @RequestBody StartSessionRequest request) {
 
-        StartSessionResponse response = practiceService.startSession(
-                authentication.getName(),
-                request);
+                StartSessionResponse response = practiceService.startSession(
+                                authentication.getName(),
+                                request);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
+                return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        }
 
-    @PostMapping("/sessions/{sessionId}/results")
-    public ResponseEntity<SubmitResultResponse> submitResult(
-            Authentication authentication,
-            @PathVariable UUID sessionId,
-            @Valid @RequestBody SubmitResultRequest request) {
+        @PostMapping("/sessions/{sessionId}/submit")
+        public ResponseEntity<SubmitResultResponse> submitResult(
+                        Authentication authentication,
+                        @PathVariable UUID sessionId,
+                        @Valid @RequestBody SubmitResultRequest request) {
 
-        SubmitResultResponse response = practiceService.submitResult(
-                authentication.getName(),
-                sessionId,
-                request);
+                SubmitResultResponse response = practiceService.submitResult(
+                                authentication.getName(),
+                                sessionId,
+                                request);
 
-        return ResponseEntity.ok(response);
-    }
+                return ResponseEntity.ok(response);
+        }
 
-    @PostMapping("/sessions/{sessionId}/complete")
-    public ResponseEntity<CompleteSessionResponse> completeSession(
-            Authentication authentication,
-            @PathVariable UUID sessionId) {
+        @PostMapping("/sessions/{sessionId}/complete")
+        public ResponseEntity<CompleteSessionResponse> completeSession(
+                        Authentication authentication,
+                        @PathVariable UUID sessionId) {
 
-        CompleteSessionResponse response = practiceService.completeSession(
-                authentication.getName(),
-                sessionId);
+                CompleteSessionResponse response = practiceService.completeSession(
+                                authentication.getName(),
+                                sessionId);
 
-        return ResponseEntity.ok(response);
-    }
+                return ResponseEntity.ok(response);
+        }
 
-    @GetMapping("/sessions")
-    public ResponseEntity<Page<PracticeSession>> getPracticeHistory(
-            Authentication authentication,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+        @GetMapping("/sessions")
+        public ResponseEntity<Page<PracticeSession>> getPracticeHistory(
+                        Authentication authentication,
+                        @RequestParam(defaultValue = "0") int page,
+                        @RequestParam(defaultValue = "20") int size) {
 
-        Page<PracticeSession> history = practiceService.getPracticeHistory(
-                authentication.getName(),
-                page,
-                size);
+                Page<PracticeSession> history = practiceService.getPracticeHistory(
+                                authentication.getName(),
+                                page,
+                                size);
 
-        return ResponseEntity.ok(history);
-    }
+                return ResponseEntity.ok(history);
+        }
 }

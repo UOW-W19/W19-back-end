@@ -7,49 +7,74 @@ We have adopted a **Layered Architecture** (Technical Layering) for the Spring B
 - `repository`: Data access interfaces.
 - `entity`: JPA entities.
 - `common`: Shared utilities and base classes.
+- `dto`: Data Transfer Objects for API requests/responses.
 
 ## 2. Key Components
 
 ### Application Entry Point
-The main application class has been renamed from `DemoApplication` to **`W19BackendApplication`** to reflect the project identity.
+The main application class is **`W19BackendApplication`**.
 
 ### BaseEntity (`com.example.demo.common.BaseEntity`)
 A mapped superclass for all JPA entities to inherit from. It provides:
-- **Primary Key**: `Long id` (Auto-increment `IDENTITY` strategy).
-- **Auditing**: Automatic `createdAt` and `updatedAt` management using `@PrePersist` and `@PreUpdate`.
+- **Primary Key**: `UUID id` (Changed from Long to UUID for distributed safety).
+- **Auditing**: Automatic `createdAt` and `updatedAt` management.
 
 ```java
 @MappedSuperclass
+@EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-    
-    // ... @PrePersist and @PreUpdate methods
+    private Instant updatedAt;
 }
 ```
 
-## 3. Database Strategy
-- **ORM**: Spring Data JPA.
-- **DTO Pattern**: We will expose DTOs (Data Transfer Objects) via the API, not Entities directly.
+## 3. API Standards & Best Practices
+
+### JSON Naming Convention
+- **Strategy:** `snake_case`
+- **Implementation:** All DTOs use `@JsonProperty("field_name")` to ensure JSON responses are strictly `snake_case`, while Java code remains `camelCase`.
+- **Reasoning:** aligns with common frontend/JSON standards and ensures consistency across different clients.
+
+### RESTful Design
+- **Resources:** URLs represent resources (nouns), not actions.
+  - Good: `POST /api/learn/sessions/start` (Resource action for session creation)
+  - Bad: `POST /api/practice/start` (Ambiguous)
+- **Sub-resources:** proper nesting.
+  - `GET /api/posts/{id}/translations` (Get translations for a post)
+  - `POST /api/learn/sessions/{id}/submit` (Submit a result to a session)
+
+### CORS Configuration
+- **Development:** Permissive CORS (All origins `*`, all methods `*`) enabled in `SecurityConfig` to facilitate frontend development.
 
 ## 4. Security Architecture (JWT)
-The application uses **Spring Security** with a stateless **JWT (JSON Web Token)** based authentication mechanism.
+The application uses **Spring Security** with a stateless **JWT** mechanism.
+- **`JwtAuthenticationFilter`**: Intercepts requests, validates `Authorization: Bearer <token>`, and sets the `SecurityContext`.
+- **Public Routes:** `/api/auth/**`, `/api/languages`, `/error`.
+- **Protected Routes:** All other `/api/**` endpoints.
 
-### Key Security Components:
-- **`JwtUtils`**: Handles token generation, parsing, and validation using the HMAC-SHA256 algorithm.
-- **`JwtAuthenticationFilter`**: A custom filter that intercepts every request, extracts the Bearer token, validates it, and sets the security context.
-- **`CustomUserDetailsService`**: Bridge between Spring Security and our database, loading `Profile` records as `UserDetails`.
-- **`SecurityConfig`**: Configures the filter chain, enabling stateless session management and defining public/protected routes.
+## 5. Database Strategy
+- **ORM**: Spring Data JPA.
+- **DTO Projection**: Entities are never exposed directly; they are mapped to DTOs in the Service layer.
+- **Enums**: Used strictly for state (e.g., `ReactionType`, `ReportReason`) to ensure data integrity.
 
-### Auth Flow:
-1. User provides credentials to `/api/auth/register` (or `login`).
-2. Server validates credentials and returns a JWT.
-3. User includes JWT in the `Authorization: Bearer <token>` header for subsequent requests.
-4. `JwtAuthenticationFilter` validates the token and authenticates the user for that request.
+## 6. Feature Specific Implementations
+
+### Follow System
+The Follow system (`UserFollow` entity) uses a join table strategy with explicit relationship management:
+- **`follower`**: The user who initiates the follow (source).
+- **`following`**: The user being followed (target).
+- **Service Layer**: A dedicated `FollowService` handles business logic including self-follow prevention and idempotency.
+
+### Learning Module
+The learning module (`api/learn`) is designed around "Sessions":
+1. **Start**: Initialize a session with a set of words.
+2. **Interact**: Submit answers one by one or in batch.
+3. **Complete**: Finalize the session and calculate XP/Score.
+

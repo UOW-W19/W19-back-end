@@ -48,4 +48,18 @@ public class FollowService {
 
         followRepository.deleteByFollowerIdAndFollowingId(follower.getId(), followingId);
     }
+
+    @Transactional(readOnly = true)
+    public java.util.List<Profile> getFollowers(UUID userId) {
+        return followRepository.findByFollowingId(userId).stream()
+                .map(UserFollow::getFollower)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.List<Profile> getFollowing(UUID userId) {
+        return followRepository.findByFollowerId(userId).stream()
+                .map(UserFollow::getFollowing)
+                .collect(java.util.stream.Collectors.toList());
+    }
 }

@@ -128,7 +128,7 @@ public class PracticeControllerTest {
                 request.setSessionSize(10);
                 request.setLanguageCode("ja");
 
-                mockMvc.perform(post("/api/practice/sessions")
+                mockMvc.perform(post("/api/learn/sessions/start")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isCreated())
@@ -143,7 +143,7 @@ public class PracticeControllerTest {
                 StartSessionRequest request = new StartSessionRequest();
                 request.setSessionSize(7); // Invalid size
 
-                mockMvc.perform(post("/api/practice/sessions")
+                mockMvc.perform(post("/api/learn/sessions/start")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isBadRequest());
@@ -158,7 +158,7 @@ public class PracticeControllerTest {
                 StartSessionRequest request = new StartSessionRequest();
                 request.setSessionSize(10);
 
-                mockMvc.perform(post("/api/practice/sessions")
+                mockMvc.perform(post("/api/learn/sessions/start")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isBadRequest());
@@ -167,7 +167,7 @@ public class PracticeControllerTest {
         @Test
         @WithMockUser(username = "test@example.com")
         void getPracticeHistory_Success() throws Exception {
-                mockMvc.perform(get("/api/practice/sessions")
+                mockMvc.perform(get("/api/learn/sessions")
                                 .param("page", "0")
                                 .param("size", "20"))
                                 .andExpect(status().isOk())

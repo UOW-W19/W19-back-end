@@ -62,4 +62,5 @@ public class UserController {
                 userService.unblockUser(blocker.getId(), userId);
                 return ResponseEntity.ok().build();
         }
+
 }
