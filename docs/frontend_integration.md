@@ -15,6 +15,7 @@ This document tracks which frontend features have backend API support and which 
 | **Posts/Feed** | ✅ | ✅ | `GET /api/posts` | ✅ Working |
 | **Learning - Words** | ✅ | ✅ | `GET /api/words` | ✅ Working |
 | **Learning - Stats** | ✅ | ✅ | `GET /api/learn/stats` | ✅ Working |
+| **Nearby Learners** | ✅ | ✅ | `GET /api/learners/nearby` | ✅ Working |
 
 ---
 
@@ -117,41 +118,7 @@ Frontend Location: `src/pages/MessagesPage.tsx`
 
 **WebSocket:** `ws://api/messages` for real-time messaging
 
----
 
-### 4. **Nearby Learners (Explore Map)**
-Frontend Location: `src/components/explore/ExploreMap.tsx`
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/learners/nearby` | GET | Get nearby learners |
-
-**Query Parameters:**
-- `latitude` (required)
-- `longitude` (required)
-- `radius_km` (default: 10)
-- `language` (optional filter)
-
-**Response:**
-```json
-{
-  "learners": [
-    {
-      "id": "uuid",
-      "display_name": "John",
-      "avatar_url": "...",
-      "latitude": 40.7128,
-      "longitude": -74.0060,
-      "languages": [
-        { "code": "es", "flag_emoji": "🇪🇸", "proficiency": "NATIVE" }
-      ],
-      "distance_km": 2.5
-    }
-  ]
-}
-```
-
----
 
 ### 5. **Notifications**
 Frontend: Not yet implemented
@@ -187,9 +154,9 @@ Frontend: Not yet implemented
 6. ~~User Settings~~
 7. ~~Post Translation~~
 
-### Phase 2 (Discovery) - 🚧 IN PROGRESS
-1. Nearby Learners
-2. Meetups System
+### Phase 2 (Discovery) - ✅ COMPLETED
+1. ~~Nearby Learners~~
+2. Meetups System (In Progress)
 
 ### Phase 3 (Communication)
 1. Messaging System

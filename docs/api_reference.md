@@ -1,7 +1,7 @@
 # API Reference - W19 Backend
 
 **Base URL:** `http://localhost:8081/api`  
-**Last Updated:** 2026-01-10
+**Last Updated:** 2026-01-12
 
 > **Note:** All JSON fields are **`snake_case`**.
 
@@ -14,6 +14,7 @@
 3. [Languages](#languages)
 4. [Posts & Content](#posts--content)
 5. [Learning Core](#learning-core)
+6. [Discovery](#discovery)
 
 ---
 
@@ -185,4 +186,60 @@ Save a word manually.
 
 ### GET /api/learn/stats
 Get learning statistics (XP, streaks, etc).
+
+---
+
+## Discovery
+
+### GET /api/learners/nearby
+Find nearby language learners based on geolocation.
+
+**Authentication:** Required (JWT)
+
+**Query Parameters:**
+- `latitude` (required): Latitude coordinate (-90 to 90)
+- `longitude` (required): Longitude coordinate (-180 to 180)
+- `radius_km` (optional, default: 10): Search radius in kilometers (must be > 0)
+- `language` (optional): Filter by language code (e.g., `es`, `ja`)
+
+**Response:** `200 OK`
+```json
+{
+  "learners": [
+    {
+      "id": "uuid",
+      "display_name": "John Doe",
+      "avatar_url": "https://...",
+      "latitude": -33.8700,
+      "longitude": 151.2100,
+      "distance_km": 1.23,
+      "languages": [
+        {
+          "code": "es",
+          "name": "Spanish",
+          "flag_emoji": "🇪🇸",
+          "proficiency": "B1",
+          "is_learning": true
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Error Responses:**
+- `400 Bad Request`: Missing or invalid parameters
+- `403 Forbidden`: Not authenticated
+
+**Example Request:**
+```bash
+GET /api/learners/nearby?latitude=-33.8688&longitude=151.2093&radius_km=5&language=es
+Authorization: Bearer <jwt_token>
+```
+
+**Notes:**
+- Results are sorted by distance (closest first)
+- Current user is excluded from results
+- Users without location data are excluded
+- Distance calculated using Haversine formula
 
