@@ -16,6 +16,7 @@ This document tracks which frontend features have backend API support and which 
 | **Learning - Words** | ✅ | ✅ | `GET /api/words` | ✅ Working |
 | **Learning - Stats** | ✅ | ✅ | `GET /api/learn/stats` | ✅ Working |
 | **Nearby Learners** | ✅ | ✅ | `GET /api/learners/nearby` | ✅ Working |
+| **Meetups System** | ✅ | ✅ | `POST/GET/PUT/DELETE /api/meetups` | ✅ Working |
 
 ---
 
@@ -51,24 +52,6 @@ This document tracks which frontend features have backend API support and which 
 ---
 
 ## ❌ Not Yet Implemented (Backend Needed)
-
-### 1. **Meetups/Events System**
-Frontend Location: `src/pages/ExplorePage.tsx`, `src/components/explore/`
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/meetups` | GET | List meetups (with filters: location, language, date) |
-| `/api/meetups` | POST | Create new meetup |
-| `/api/meetups/{id}` | GET | Get meetup details |
-| `/api/meetups/{id}` | PUT | Update meetup |
-| `/api/meetups/{id}` | DELETE | Delete meetup |
-| `/api/meetups/{id}/join` | POST | Join a meetup |
-| `/api/meetups/{id}/leave` | POST | Leave a meetup |
-| `/api/meetups/{id}/attendees` | GET | List attendees |
-
-**Request/Response Contracts:** See `src/types/meetup.ts`
-
----
 
 ### 2. **AI Object Scanner**
 Frontend Location: `src/pages/ScannerPage.tsx`
@@ -156,7 +139,7 @@ Frontend: Not yet implemented
 
 ### Phase 2 (Discovery) - ✅ COMPLETED
 1. ~~Nearby Learners~~
-2. Meetups System (In Progress)
+2. ~~Meetups System~~
 
 ### Phase 3 (Communication)
 1. Messaging System
