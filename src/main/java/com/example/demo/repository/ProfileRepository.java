@@ -23,4 +23,14 @@ public interface ProfileRepository extends JpaRepository<Profile, java.util.UUID
         java.util.List<Profile> searchProfiles(
                         @org.springframework.data.repository.query.Param("nativeLanguage") String nativeLanguage,
                         @org.springframework.data.repository.query.Param("learningLanguage") String learningLanguage);
+
+        @org.springframework.data.jpa.repository.Query("SELECT p FROM Profile p WHERE " +
+                        "p.latitude IS NOT NULL AND p.longitude IS NOT NULL AND " +
+                        "(6371 * acos(cos(radians(:latitude)) * cos(radians(p.latitude)) * " +
+                        "cos(radians(p.longitude) - radians(:longitude)) + " +
+                        "sin(radians(:latitude)) * sin(radians(p.latitude)))) < :radiusKm")
+        java.util.List<Profile> findNearbyProfiles(
+                        @org.springframework.data.repository.query.Param("latitude") Double latitude,
+                        @org.springframework.data.repository.query.Param("longitude") Double longitude,
+                        @org.springframework.data.repository.query.Param("radiusKm") Double radiusKm);
 }
