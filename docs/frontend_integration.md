@@ -1,6 +1,6 @@
 # Frontend Integration Guide - Current Implementation
 
-**Last Updated:** 2026-01-05  
+**Last Updated:** 2026-01-21  
 **Base URL:** `http://localhost:8081/api`  
 **Auth:** Bearer Token (JWT)
 
@@ -11,12 +11,12 @@
 ## Table of Contents
 
 1. [Authentication](#1-authentication) - 4 endpoints ✅
-2. [Users & Profiles](#2-users--profiles) - 13 endpoints ✅
+2. [Users & Profiles](#2-users--profiles) - 16 endpoints ✅
 3. [Languages](#3-languages) - 2 endpoints ✅
 4. [Posts & Content](#4-posts--content) - 9 endpoints ⚠️
-5. [Social Features](#5-social-features) - 2 endpoints ✅
+5. [Social Features](#5-social-features) - 4 endpoints ✅
 
-**Total Implemented:** 30 endpoints
+**Total Implemented:** 35 endpoints
 
 ---
 
@@ -194,7 +194,23 @@ const getCurrentUser = async () => {
 **Endpoint:** `GET /users/{userId}`  
 **Auth:** Required
 
-**Response:** Same as `ProfileResponse` above
+**Response:**
+```typescript
+interface PublicUserProfileDto {
+  id: string;
+  username: string;
+  display_name: string;
+  avatar_url: string | null;
+  bio: string | null;
+  location: string | null;
+  followers_count: number;
+  following_count: number;
+  posts_count: number;
+  is_following: boolean;  // Does current user follow this user?
+  is_followed_by: boolean;  // Does this user follow current user?
+  languages: UserLanguage[];
+}
+```
 
 **Example:**
 ```typescript
@@ -202,6 +218,62 @@ const getUserProfile = async (userId: string) => {
   const token = localStorage.getItem('access_token');
   const response = await fetch(`http://localhost:8081/api/users/${userId}`, {
     headers: { 'Authorization': `Bearer ${token}` }
+  });
+  return await response.json();
+};
+```
+
+---
+
+### Get User Posts
+**Endpoint:** `GET /users/{userId}/posts`  
+**Auth:** Required
+
+**Query Parameters:**
+- `page` (default: 0)
+- `size` (default: 10)
+
+**Response:** Paginated `PostResponse` (same structure as feed)
+
+**Example:**
+```typescript
+const getUserPosts = async (userId: string, page = 0) => {
+  const token = localStorage.getItem('access_token');
+  const response = await fetch(
+    `http://localhost:8081/api/users/${userId}/posts?page=${page}&size=10`,
+    { headers: { 'Authorization': `Bearer ${token}` } }
+  );
+  return await response.json();
+};
+```
+
+---
+
+### Update Privacy Settings
+**Endpoint:** `PATCH /users/me/privacy`  
+**Auth:** Required
+
+**Request:**
+```typescript
+interface PrivacySettingsDto {
+  show_activity?: boolean;  // Show learning activity on profile
+  show_saved_words?: boolean;  // Show saved words count
+}
+```
+
+**Response:** Updated `PrivacySettingsDto`
+
+**Example:**
+```typescript
+const updatePrivacy = async (settings: PrivacySettingsDto) => {
+  const token = localStorage.getItem('access_token');
+  const response = await fetch('http://localhost:8081/api/users/me/privacy', {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(settings)
   });
   return await response.json();
 };
@@ -640,18 +712,122 @@ interface CommentResponse {
 ## 5. Social Features
 
 ### Follow User
-**Endpoint:** `POST /users/{id}/follow`  
+**Endpoint:** `POST /follow`  
 **Auth:** Required
 
+**Request:**
+```typescript
+{ following_id: string }  // UUID of user to follow
+```
+
 **Response:** `200 OK`
+
+**Example:**
+```typescript
+const followUser = async (userId: string) => {
+  const token = localStorage.getItem('access_token');
+  await fetch('http://localhost:8081/api/follow', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ following_id: userId })
+  });
+};
+```
 
 ---
 
 ### Unfollow User
-**Endpoint:** `DELETE /users/{id}/follow`  
+**Endpoint:** `DELETE /follow`  
 **Auth:** Required
 
+**Request:**
+```typescript
+{ following_id: string }  // UUID of user to unfollow
+```
+
 **Response:** `200 OK`
+
+**Example:**
+```typescript
+const unfollowUser = async (userId: string) => {
+  const token = localStorage.getItem('access_token');
+  await fetch('http://localhost:8081/api/follow', {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ following_id: userId })
+  });
+};
+```
+
+---
+
+### Get Followers
+**Endpoint:** `GET /follow/followers`  
+**Auth:** Required
+
+**Query Parameters:**
+- `page` (default: 0)
+- `size` (default: 20)
+
+**Response:**
+```typescript
+interface PagedFollowerResponse {
+  content: FollowerDto[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+}
+
+interface FollowerDto {
+  id: string;
+  username: string;
+  display_name: string;
+  avatar_url: string | null;
+}
+```
+
+**Example:**
+```typescript
+const getFollowers = async (page = 0) => {
+  const token = localStorage.getItem('access_token');
+  const response = await fetch(
+    `http://localhost:8081/api/follow/followers?page=${page}&size=20`,
+    { headers: { 'Authorization': `Bearer ${token}` } }
+  );
+  return await response.json();
+};
+```
+
+---
+
+### Get Following
+**Endpoint:** `GET /follow/following`  
+**Auth:** Required
+
+**Query Parameters:**
+- `page` (default: 0)
+- `size` (default: 20)
+
+**Response:** Same as `PagedFollowerResponse` above
+
+**Example:**
+```typescript
+const getFollowing = async (page = 0) => {
+  const token = localStorage.getItem('access_token');
+  const response = await fetch(
+    `http://localhost:8081/api/follow/following?page=${page}&size=20`,
+    { headers: { 'Authorization': `Bearer ${token}` } }
+  );
+  return await response.json();
+};
+```
 
 ---
 
@@ -729,11 +905,7 @@ export function Feed() {
 ## Missing Endpoints (Not Yet Implemented)
 
 ### Section 2: Users
-- `GET /users/{user_id}` - Public profile
-- `PATCH /users/me` - Update profile
-- `GET /users/{user_id}/followers`
-- `GET /users/{user_id}/following`
-- `GET /users/me/languages` - Get languages
+- None - All user endpoints implemented ✅
 
 ### Section 4: Posts
 - `PATCH /posts/{post_id}` - Update post
