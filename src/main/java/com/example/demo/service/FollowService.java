@@ -54,19 +54,6 @@ public class FollowService {
     }
 
     @Transactional(readOnly = true)
-<<<<<<< HEAD
-    public java.util.List<Profile> getFollowers(UUID userId) {
-        return followRepository.findByFollowingId(userId).stream()
-                .map(UserFollow::getFollower)
-                .collect(java.util.stream.Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public java.util.List<Profile> getFollowing(UUID userId) {
-        return followRepository.findByFollowerId(userId).stream()
-                .map(UserFollow::getFollowing)
-                .collect(java.util.stream.Collectors.toList());
-=======
     public Page<ProfileResponse> getFollowers(UUID userId, Pageable pageable) {
         return followRepository.findByFollowingId(userId, pageable)
                 .map(follow -> profileService.mapToResponse(follow.getFollower()));
@@ -76,6 +63,5 @@ public class FollowService {
     public Page<ProfileResponse> getFollowing(UUID userId, Pageable pageable) {
         return followRepository.findByFollowerId(userId, pageable)
                 .map(follow -> profileService.mapToResponse(follow.getFollowing()));
->>>>>>> feature/users
     }
 }

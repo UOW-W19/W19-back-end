@@ -18,14 +18,8 @@ public interface FollowRepository extends JpaRepository<UserFollow, UUID> {
 
     void deleteByFollowerIdAndFollowingId(UUID followerId, UUID followingId);
 
-<<<<<<< HEAD
-    java.util.List<UserFollow> findByFollowerId(UUID followerId);
-
-    java.util.List<UserFollow> findByFollowingId(UUID followingId);
-=======
     // Pagination support for followers/following lists
     Page<UserFollow> findByFollowingId(UUID followingId, Pageable pageable);
 
     Page<UserFollow> findByFollowerId(UUID followerId, Pageable pageable);
->>>>>>> feature/users
 }
