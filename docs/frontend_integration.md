@@ -8,6 +8,136 @@ This document tracks which frontend features have backend API support and which 
 
 ## ✅ Fully Implemented & Verified (2026-01-10)
 
+1. [Authentication](#1-authentication) - 4 endpoints ✅
+2. [Users & Profiles](#2-users--profiles) - 13 endpoints ✅
+3. [Languages](#3-languages) - 2 endpoints ✅
+4. [Posts & Content](#4-posts--content) - 9 endpoints ⚠️
+5. [Social Features](#5-social-features) - 2 endpoints ✅
+
+**Total Implemented:** 30 endpoints
+
+---
+
+## 1. Authentication
+
+### Register
+**Endpoint:** `POST /auth/register`
+
+**Request:**
+```typescript
+interface RegisterRequest {
+  email: string;
+  password: string; // min 6 characters
+  username?: string; // optional
+  display_name: string;
+}
+```
+
+**Response:** `201 Created`
+```typescript
+interface AuthResponse {
+  user_id: string; // UUID
+  access_token: string;
+  refresh_token: string;
+  expires_in: number; // seconds
+}
+```
+
+**Example:**
+```typescript
+const register = async (email: string, password: string, displayName: string) => {
+  const response = await fetch('http://localhost:8081/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email,
+      password,
+      display_name: displayName
+    })
+  });
+  return await response.json();
+};
+```
+
+---
+
+### Login
+**Endpoint:** `POST /auth/login`
+
+**Request:**
+```typescript
+interface LoginRequest {
+  email: string;
+  password: string;
+}
+```
+
+**Response:** `200 OK` (same as AuthResponse)
+
+**Example:**
+```typescript
+const login = async (email: string, password: string) => {
+  const response = await fetch('http://localhost:8081/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+  const data = await response.json();
+  localStorage.setItem('access_token', data.access_token);
+  localStorage.setItem('refresh_token', data.refresh_token);
+  return data;
+};
+```
+
+---
+
+### Refresh Token
+**Endpoint:** `POST /auth/refresh`
+
+**Request:**
+```typescript
+interface TokenRefreshRequest {
+  refresh_token: string;
+}
+```
+
+**Response:** `200 OK` (new AuthResponse with rotated tokens)
+
+**Example:**
+```typescript
+const refreshToken = async () => {
+  const refreshToken = localStorage.getItem('refresh_token');
+  const response = await fetch('http://localhost:8081/api/auth/refresh', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refresh_token: refreshToken })
+  });
+  const data = await response.json();
+  localStorage.setItem('access_token', data.access_token);
+  localStorage.setItem('refresh_token', data.refresh_token);
+  return data;
+};
+```
+
+---
+
+### Logout
+**Endpoint:** `POST /auth/logout`  
+**Auth:** Required
+
+**Response:** `204 No Content`
+
+**Example:**
+```typescript
+const logout = async () => {
+  const token = localStorage.getItem('access_token');
+  await fetch('http://localhost:8081/api/auth/logout', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  localStorage.clear();
+};
+```
 | Feature | Frontend | Backend | Endpoint | Status |
 |---------|----------|---------|----------|--------|
 | **Authentication** | ✅ | ✅ | `POST /api/auth/login` | ✅ Working |
@@ -38,6 +168,149 @@ This document tracks which frontend features have backend API support and which 
 
 ---
 
+### Get Public Profile
+**Endpoint:** `GET /users/{userId}`  
+**Auth:** Required
+
+**Response:** Same as `ProfileResponse` above
+
+**Example:**
+```typescript
+const getUserProfile = async (userId: string) => {
+  const token = localStorage.getItem('access_token');
+  const response = await fetch(`http://localhost:8081/api/users/${userId}`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  return await response.json();
+};
+```
+
+---
+
+### Update Profile
+**Endpoint:** `PATCH /users/me`  
+**Auth:** Required
+
+**Request:** (partial updates supported)
+```typescript
+interface UpdateProfileRequest {
+  display_name?: string;
+  bio?: string;
+  avatar_url?: string;
+  latitude?: number;
+  longitude?: number;
+}
+```
+
+**Response:** Updated `ProfileResponse`
+
+**Example:**
+```typescript
+const updateProfile = async (updates: UpdateProfileRequest) => {
+  const token = localStorage.getItem('access_token');
+  const response = await fetch('http://localhost:8081/api/users/me', {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(updates)
+  });
+  return await response.json();
+};
+```
+
+---
+
+### Get Followers
+**Endpoint:** `GET /users/{userId}/followers`  
+**Auth:** Required
+
+**Query Parameters:**
+- `page` (default: 0)
+- `size` (default: 20)
+
+**Response:**
+```typescript
+interface PagedProfileResponse {
+  content: ProfileResponse[];
+  pageable: {...};
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+}
+```
+
+**Example:**
+```typescript
+const getFollowers = async (userId: string, page = 0) => {
+  const token = localStorage.getItem('access_token');
+  const response = await fetch(
+    `http://localhost:8081/api/users/${userId}/followers?page=${page}&size=20`,
+    { headers: { 'Authorization': `Bearer ${token}` } }
+  );
+  return await response.json();
+};
+```
+
+---
+
+### Get Following
+**Endpoint:** `GET /users/{userId}/following`  
+**Auth:** Required
+
+**Query Parameters:**
+- `page` (default: 0)
+- `size` (default: 20)
+
+**Response:** Same as `PagedProfileResponse` above
+
+**Example:**
+```typescript
+const getFollowing = async (userId: string, page = 0) => {
+  const token = localStorage.getItem('access_token');
+  const response = await fetch(
+    `http://localhost:8081/api/users/${userId}/following?page=${page}&size=20`,
+    { headers: { 'Authorization': `Bearer ${token}` } }
+  );
+  return await response.json();
+};
+```
+
+---
+
+### Get User Languages
+**Endpoint:** `GET /users/me/languages`  
+**Auth:** Required
+
+**Response:**
+```typescript
+type UserLanguage[] = Array<{
+  code: string;
+  name: string;
+  flag_emoji: string;
+  proficiency: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'NATIVE';
+  is_learning: boolean;
+}>;
+```
+
+**Example:**
+```typescript
+const getUserLanguages = async () => {
+  const token = localStorage.getItem('access_token');
+  const response = await fetch('http://localhost:8081/api/users/me/languages', {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  return await response.json();
+};
+```
+
+---
+
+### Get User Settings
+**Endpoint:** `GET /users/me/settings`  
+**Auth:** Required
 ## ✅ Frontend Service Paths (Updated to Match Backend Contract)
 
 | Service | Frontend Path | Matches Contract |
