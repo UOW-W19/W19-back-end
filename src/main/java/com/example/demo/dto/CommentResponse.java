@@ -12,6 +12,8 @@ public class CommentResponse {
     private UUID id;
     private AuthorDto author;
     private String content;
+
+    @com.fasterxml.jackson.annotation.JsonProperty("created_at")
     private Instant createdAt;
 
     @Data
@@ -21,7 +23,11 @@ public class CommentResponse {
     public static class AuthorDto {
         private UUID id;
         private String username;
+
+        @com.fasterxml.jackson.annotation.JsonProperty("display_name")
         private String displayName;
+
+        @com.fasterxml.jackson.annotation.JsonProperty("avatar_url")
         private String avatarUrl;
     }
 }

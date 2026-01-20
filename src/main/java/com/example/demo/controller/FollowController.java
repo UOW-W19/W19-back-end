@@ -18,6 +18,7 @@ import java.util.UUID;
 public class FollowController {
 
     private final FollowService followService;
+    private final com.example.demo.service.ProfileService profileService;
 
     @PostMapping("/{id}/follow")
     public ResponseEntity<Void> followUser(@PathVariable UUID id, Authentication authentication) {
@@ -26,7 +27,7 @@ public class FollowController {
     }
 
     @DeleteMapping("/{id}/follow")
-    public ResponseEntity<Void> unfollowUser(@PathVariable UUID id, Authentication authentication) {
+    public ResponseEntity<Void> unfollowUser(@PathVariable java.util.UUID id, Authentication authentication) {
         followService.unfollowUser(id, authentication.getName());
         return ResponseEntity.ok().build();
     }

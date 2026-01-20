@@ -62,12 +62,11 @@ public class PostController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{postId}/translations")
+    @GetMapping("/{postId}/translations")
     public ResponseEntity<com.example.demo.dto.PostTranslationResponse> translatePost(
             @PathVariable UUID postId,
-            @RequestBody java.util.Map<String, String> body) {
-        String language = body.get("targetLanguage");
-        return ResponseEntity.ok(translationService.getTranslation(postId, language));
+            @RequestParam(name = "target_language") String targetLanguage) {
+        return ResponseEntity.ok(translationService.getTranslation(postId, targetLanguage));
     }
 
     @PostMapping("/{postId}/reports")

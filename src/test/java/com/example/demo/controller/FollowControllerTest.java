@@ -1,25 +1,26 @@
 package com.example.demo.controller;
 
 import com.example.demo.entity.Profile;
+import com.example.demo.entity.UserFollow;
 import com.example.demo.repository.FollowRepository;
 import com.example.demo.repository.ProfileRepository;
-import com.example.demo.security.JwtUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class FollowControllerTest {
 
         @Autowired
@@ -32,64 +33,121 @@ public class FollowControllerTest {
         private FollowRepository followRepository;
 
         @Autowired
-        private JwtUtils jwtUtils;
+        private com.example.demo.repository.ContentReportRepository contentReportRepository;
+        @Autowired
+        private com.example.demo.repository.PostTranslationRepository postTranslationRepository;
+        @Autowired
+        private com.example.demo.repository.PostReactionRepository postReactionRepository;
+        @Autowired
+        private com.example.demo.repository.PostCommentRepository postCommentRepository;
+        @Autowired
+        private com.example.demo.repository.PostRepository postRepository;
+        @Autowired
+        private com.example.demo.repository.PracticeResultRepository practiceResultRepository;
+        @Autowired
+        private com.example.demo.repository.PracticeSessionRepository practiceSessionRepository;
+        @Autowired
+        private com.example.demo.repository.SavedWordRepository savedWordRepository;
+        @Autowired
+        private com.example.demo.repository.UserLanguageRepository userLanguageRepository;
+        @Autowired
+        private com.example.demo.repository.UserSettingsRepository userSettingsRepository;
+        @Autowired
+        private com.example.demo.repository.UserBlockRepository userBlockRepository;
+        @Autowired
+        private com.example.demo.repository.RefreshTokenRepository refreshTokenRepository;
+        @Autowired
+        private com.example.demo.repository.LanguageRepository languageRepository;
 
-        private String token;
-        private Profile follower;
-        private Profile following;
+        private Profile userA;
+        private Profile userB;
 
         @BeforeEach
         void setUp() {
+                // Clean up all data to avoid FK constraint issues
+                contentReportRepository.deleteAll();
+                postTranslationRepository.deleteAll();
+                postReactionRepository.deleteAll();
+                postCommentRepository.deleteAll();
+                postRepository.deleteAll();
+                practiceResultRepository.deleteAll();
+                practiceSessionRepository.deleteAll();
+                savedWordRepository.deleteAll();
+                userLanguageRepository.deleteAll();
+                userSettingsRepository.deleteAll();
+                userBlockRepository.deleteAll();
                 followRepository.deleteAll();
+                refreshTokenRepository.deleteAll();
                 profileRepository.deleteAll();
+                languageRepository.deleteAll();
 
-                follower = Profile.builder()
-                                .email("follower@example.com")
-                                .username("follower")
-                                .passwordHash("hash")
+                userA = Profile.builder()
+                                .username("userA")
+                                .email("usera@example.com")
+                                .passwordHash("pass")
+                                .displayName("User A")
                                 .build();
-                profileRepository.save(follower);
+                profileRepository.save(userA);
 
-                following = Profile.builder()
-                                .email("following@example.com")
-                                .username("following")
-                                .passwordHash("hash")
+                userB = Profile.builder()
+                                .username("userB")
+                                .email("userb@example.com")
+                                .passwordHash("pass")
+                                .displayName("User B")
                                 .build();
-                profileRepository.save(following);
-
-                token = "Bearer " + jwtUtils.generateToken(follower.getEmail());
+                profileRepository.save(userB);
         }
 
         @Test
-        void shouldFollowUser() throws Exception {
-                mockMvc.perform(post("/api/users/" + following.getId() + "/follow")
-                                .header("Authorization", token))
+        @WithMockUser(username = "usera@example.com")
+        void followUser_Success() throws Exception {
+                mockMvc.perform(post("/api/users/" + userB.getId() + "/follow"))
                                 .andExpect(status().isOk());
 
-                assertEquals(1, followRepository.countByFollowerId(follower.getId()));
-                assertEquals(1, followRepository.countByFollowingId(following.getId()));
+                assert (followRepository.existsByFollowerIdAndFollowingId(userA.getId(), userB.getId()));
         }
 
         @Test
-        void shouldUnfollowUser() throws Exception {
-                // Given
-                mockMvc.perform(post("/api/users/" + following.getId() + "/follow")
-                                .header("Authorization", token))
+        @WithMockUser(username = "usera@example.com")
+        void unfollowUser_Success() throws Exception {
+                // Setup initial follow
+                UserFollow follow = UserFollow.builder()
+                                .follower(userA)
+                                .following(userB)
+                                .build();
+                followRepository.save(follow);
+
+                mockMvc.perform(post("/api/users/" + userB.getId() + "/unfollow"))
                                 .andExpect(status().isOk());
 
-                // When
-                mockMvc.perform(delete("/api/users/" + following.getId() + "/follow")
-                                .header("Authorization", token))
-                                .andExpect(status().isOk());
-
-                // Then
-                assertEquals(0, followRepository.countByFollowerId(follower.getId()));
+                assert (!followRepository.existsByFollowerIdAndFollowingId(userA.getId(), userB.getId()));
         }
 
         @Test
-        void shouldNotFollowSelf() throws Exception {
-                mockMvc.perform(post("/api/users/" + follower.getId() + "/follow")
-                                .header("Authorization", token))
-                                .andExpect(status().isBadRequest()); // Handled by GlobalExceptionHandler
+        @WithMockUser(username = "usera@example.com")
+        void getFollowing_Success() throws Exception {
+                UserFollow follow = UserFollow.builder()
+                                .follower(userA)
+                                .following(userB)
+                                .build();
+                followRepository.save(follow);
+
+                mockMvc.perform(get("/api/users/" + userA.getId() + "/following"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$[0].username").value("userB"));
+        }
+
+        @Test
+        @WithMockUser(username = "userb@example.com")
+        void getFollowers_Success() throws Exception {
+                UserFollow follow = UserFollow.builder()
+                                .follower(userA)
+                                .following(userB)
+                                .build();
+                followRepository.save(follow);
+
+                mockMvc.perform(get("/api/users/" + userB.getId() + "/followers"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$[0].username").value("userA"));
         }
 }

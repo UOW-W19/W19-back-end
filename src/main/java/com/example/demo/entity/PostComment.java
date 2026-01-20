@@ -21,6 +21,10 @@ public class PostComment extends BaseEntity {
     @JoinColumn(name = "author_id", nullable = false)
     private Profile author;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_comment_id")
+    private PostComment parentComment;
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 }
